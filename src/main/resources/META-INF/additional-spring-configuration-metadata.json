@@ -1,0 +1,38 @@
+{
+  "properties": [
+    {
+      "name": "async.framework.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "Enable or disable the async processing framework."
+    },
+    {
+      "name": "async.framework.aws.region",
+      "type": "java.lang.String",
+      "defaultValue": "ap-south-1",
+      "description": "AWS region for all services."
+    },
+    {
+      "name": "async.framework.aws.dynamodb.table-name",
+      "type": "java.lang.String",
+      "description": "DynamoDB table name for storing async requests."
+    },
+    {
+      "name": "async.framework.aws.s3.bucket-name",
+      "type": "java.lang.String",
+      "description": "S3 bucket name for storing large payloads."
+    },
+    {
+      "name": "async.framework.retry.max-attempts",
+      "type": "java.lang.Integer",
+      "defaultValue": 3,
+      "description": "Maximum number of retry attempts for failed requests."
+    },
+    {
+      "name": "async.framework.retry.initial-delay",
+      "type": "java.time.Duration",
+      "defaultValue": "PT30S",
+      "description": "Initial delay before first retry attempt."
+    }
+  ]
+}
