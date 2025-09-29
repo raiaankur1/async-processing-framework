@@ -16,7 +16,7 @@ import java.util.Map;
  * capacity settings, and operational parameters.
  *
  * @author Ankur Rai
- * @version 2.0
+ * @version 1.0
  */
 @ConfigurationProperties(prefix = "async.framework.aws.dynamodb")
 @Validated

@@ -3,11 +3,12 @@ package com.pravah.framework.async.api;
 import com.pravah.framework.async.exception.AsyncFrameworkException;
 
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Enhanced Storage Client interface for async request payload handling.
+ * Storage Client interface for async request payload handling.
  * <br>
  * This interface provides comprehensive storage operations including
  * object CRUD, streaming, metadata handling, and lifecycle management.
@@ -48,6 +49,16 @@ public interface StorageClient {
     InputStream getObjectAsStream(String id, String key);
 
     /**
+     * Retrieves an object with metadata.
+     *
+     * @param id The request ID or container identifier
+     * @param key The object key
+     * @return StorageObject containing content and metadata
+     * @throws AsyncFrameworkException if retrieval fails
+     */
+    StorageObject getObjectWithMetadata(String id, String key);
+
+    /**
      * Put an object from string content.
      *
      * @param id the container/bucket identifier
@@ -79,27 +90,30 @@ public interface StorageClient {
     void putObject(String id, String key, InputStream content, long contentLength);
 
     /**
-     * Put an object with metadata.
+     * Stores an object with custom metadata and options.
      *
-     * @param id the container/bucket identifier
-     * @param key the object key
-     * @param content the content to store
-     * @param metadata object metadata
+     * @param id The request ID or container identifier
+     * @param key The object key
+     * @param content The content to store
+     * @param metadata Custom metadata to associate with the object
+     * @param options Storage options (encryption, storage class, etc.)
      * @throws AsyncFrameworkException if storage fails
      */
-    void putObject(String id, String key, String content, Map<String, String> metadata);
+    void putObject(String id, String key, byte[] content, Map<String, String> metadata, StorageOptions options);
 
     /**
-     * Put an object with content type and metadata.
+     * Stores an object using multipart upload for large objects.
      *
-     * @param id the container/bucket identifier
-     * @param key the object key
-     * @param content the content to store
-     * @param contentType the MIME content type
-     * @param metadata object metadata
-     * @throws AsyncFrameworkException if storage fails
+     * @param id The request ID or container identifier
+     * @param key The object key
+     * @param inputStream The input stream containing the content
+     * @param contentLength The length of the content in bytes
+     * @param partSize The size of each part in bytes (minimum 5MB for S3)
+     * @return Upload result containing ETag and other information
+     * @throws AsyncFrameworkException if multipart upload fails
      */
-    void putObject(String id, String key, byte[] content, String contentType, Map<String, String> metadata);
+    UploadResult putObjectMultipart(String id, String key, InputStream inputStream, long contentLength, long partSize);
+
 
     /**
      * Check if an object exists.
@@ -116,10 +130,9 @@ public interface StorageClient {
      *
      * @param id the container/bucket identifier
      * @param key the object key
-     * @return true if object was deleted, false if it didn't exist
      * @throws AsyncFrameworkException if deletion fails
      */
-    boolean deleteObject(String id, String key);
+    void deleteObject(String id, String key);
 
     /**
      * List objects with a given prefix.
@@ -129,7 +142,7 @@ public interface StorageClient {
      * @return list of object metadata
      * @throws AsyncFrameworkException if listing fails
      */
-    List<ObjectMetadata> listObjects(String id, String prefix);
+    List<ObjectSummary> listObjects(String id, String prefix);
 
     /**
      * List objects with pagination.
@@ -141,7 +154,7 @@ public interface StorageClient {
      * @return paginated list of object metadata
      * @throws AsyncFrameworkException if listing fails
      */
-    PaginatedObjectList listObjects(String id, String prefix, int maxKeys, String continuationToken);
+    ListResult listObjects(String id, String prefix, int maxKeys, String continuationToken);
 
     /**
      * Get object metadata without retrieving the content.
@@ -169,41 +182,44 @@ public interface StorageClient {
      *
      * @param id the container/bucket identifier
      * @param key the object key
-     * @param expirationSeconds URL expiration time in seconds
+     * @param expiration URL expiration time in seconds
      * @param operation the operation type (GET, PUT, DELETE)
      * @return pre-signed URL
      * @throws AsyncFrameworkException if URL generation fails
      */
-    String generatePresignedUrl(String id, String key, int expirationSeconds, Operation operation);
+    String generatePresignedUrl(String id, String key, Instant expiration, Operation operation);
 
     /**
      * Batch delete multiple objects.
      *
      * @param id the container/bucket identifier
      * @param keys list of object keys to delete
-     * @return list of successfully deleted keys
+     * @return list of deletion results
      * @throws AsyncFrameworkException if batch delete fails
      */
-    List<String> deleteObjects(String id, List<String> keys);
+    List<DeletionResult> deleteObjects(String id, List<String> keys);
+    /**
+     * Sets lifecycle policy for automatic object cleanup.
+     *
+     * @param id The request ID or container identifier
+     * @param lifecycleRules List of lifecycle rules
+     * @throws AsyncFrameworkException if lifecycle policy setting fails
+     */
+    void setLifecyclePolicy(String id, List<LifecycleRule> lifecycleRules);
 
     /**
-     * Set object lifecycle policy.
+     * Gets the storage bucket or container name.
      *
-     * @param id the container/bucket identifier
-     * @param key the object key
-     * @param lifecyclePolicy the lifecycle policy
-     * @throws AsyncFrameworkException if policy setting fails
+     * @return The bucket or container name
      */
-    void setObjectLifecycle(String id, String key, LifecyclePolicy lifecyclePolicy);
+    String getBucketName();
 
     /**
-     * Get storage statistics for a container.
+     * Gets the environment prefix used for object keys.
      *
-     * @param id the container/bucket identifier
-     * @return storage statistics
-     * @throws AsyncFrameworkException if statistics retrieval fails
+     * @return The environment prefix
      */
-    StorageStatistics getStorageStatistics(String id);
+    String getEnvironmentPrefix();
 
     /**
      * Check if the storage client is healthy and accessible.
@@ -213,70 +229,94 @@ public interface StorageClient {
     boolean isHealthy();
 
     /**
-     * Get the storage type (e.g., "S3", "Azure Blob", "GCS").
-     *
-     * @return storage type
+     * Represents a storage object with content and metadata.
      */
-    String getStorageType();
+    class StorageObject {
+        private byte[] content;
+        private ObjectMetadata metadata;
+        
+        public StorageObject(byte[] content, ObjectMetadata metadata) {
+            this.content = content;
+            this.metadata = metadata;
+        }
+        
+        public byte[] getContent() { return content; }
+        public void setContent(byte[] content) { this.content = content; }
+        
+        public ObjectMetadata getMetadata() { return metadata; }
+        public void setMetadata(ObjectMetadata metadata) { this.metadata = metadata; }
+        
+        public String getContentAsString() {
+            return content != null ? new String(content) : null;
+        }
+    }
 
     /**
-     * Clean up old objects based on age.
-     *
-     * @param id the container/bucket identifier
-     * @param olderThanDays delete objects older than this many days
-     * @return number of deleted objects
-     * @throws AsyncFrameworkException if cleanup fails
-     */
-    int cleanupOldObjects(String id, int olderThanDays);
-
-    /**
-     * Object metadata information.
+     * Represents object metadata.
      */
     class ObjectMetadata {
-        private final String key;
-        private final long size;
-        private final long lastModified;
-        private final String etag;
-        private final String contentType;
-        private final Map<String, String> userMetadata;
+        private long contentLength;
+        private String contentType;
+        private String etag;
+        private Instant lastModified;
+        private Map<String, String> userMetadata;
+        private String storageClass;
+        private String serverSideEncryption;
 
-        public ObjectMetadata(String key, long size, long lastModified, String etag,
-                              String contentType, Map<String, String> userMetadata) {
-            this.key = key;
-            this.size = size;
-            this.lastModified = lastModified;
-            this.etag = etag;
-            this.contentType = contentType;
-            this.userMetadata = userMetadata;
-        }
+        public long getContentLength() { return contentLength; }
+        public void setContentLength(long contentLength) { this.contentLength = contentLength; }
 
-        public String getKey() {
-            return key;
-        }
+        public String getContentType() { return contentType; }
+        public void setContentType(String contentType) { this.contentType = contentType; }
 
-        public long getSize() {
-            return size;
-        }
+        public String getEtag() { return etag; }
+        public void setEtag(String etag) { this.etag = etag; }
 
-        public long getLastModified() {
-            return lastModified;
-        }
+        public Instant getLastModified() { return lastModified; }
+        public void setLastModified(Instant lastModified) { this.lastModified = lastModified; }
 
-        public String getEtag() {
-            return etag;
-        }
+        public Map<String, String> getUserMetadata() { return userMetadata; }
+        public void setUserMetadata(Map<String, String> userMetadata) { this.userMetadata = userMetadata; }
 
-        public String getContentType() {
-            return contentType;
-        }
+        public String getStorageClass() { return storageClass; }
+        public void setStorageClass(String storageClass) { this.storageClass = storageClass; }
 
-        public Map<String, String> getUserMetadata() {
-            return userMetadata;
-        }
+        public String getServerSideEncryption() { return serverSideEncryption; }
+        public void setServerSideEncryption(String serverSideEncryption) { this.serverSideEncryption = serverSideEncryption; }
+    }
 
-        public String getUserMetadata(String key) {
-            return userMetadata != null ? userMetadata.get(key) : null;
-        }
+    /**
+     * Represents storage options for object operations.
+     */
+    class StorageOptions {
+        private String storageClass;
+        private String serverSideEncryption;
+        private String kmsKeyId;
+        private String contentType;
+        private String contentEncoding;
+        private String cacheControl;
+        private Instant expires;
+
+        public String getStorageClass() { return storageClass; }
+        public void setStorageClass(String storageClass) { this.storageClass = storageClass; }
+
+        public String getServerSideEncryption() { return serverSideEncryption; }
+        public void setServerSideEncryption(String serverSideEncryption) { this.serverSideEncryption = serverSideEncryption; }
+
+        public String getKmsKeyId() { return kmsKeyId; }
+        public void setKmsKeyId(String kmsKeyId) { this.kmsKeyId = kmsKeyId; }
+
+        public String getContentType() { return contentType; }
+        public void setContentType(String contentType) { this.contentType = contentType; }
+
+        public String getContentEncoding() { return contentEncoding; }
+        public void setContentEncoding(String contentEncoding) { this.contentEncoding = contentEncoding; }
+
+        public String getCacheControl() { return cacheControl; }
+        public void setCacheControl(String cacheControl) { this.cacheControl = cacheControl; }
+
+        public Instant getExpires() { return expires; }
+        public void setExpires(Instant expires) { this.expires = expires; }
     }
 
     /**
@@ -308,6 +348,103 @@ public interface StorageClient {
         public int size() {
             return objects.size();
         }
+    }
+
+    /**
+     * Represents a summary of an object in storage.
+     */
+    class ObjectSummary {
+        private String key;
+        private long size;
+        private Instant lastModified;
+        private String etag;
+        private String storageClass;
+
+        public String getKey() { return key; }
+        public void setKey(String key) { this.key = key; }
+
+        public long getSize() { return size; }
+        public void setSize(long size) { this.size = size; }
+
+        public Instant getLastModified() { return lastModified; }
+        public void setLastModified(Instant lastModified) { this.lastModified = lastModified; }
+
+        public String getEtag() { return etag; }
+        public void setEtag(String etag) { this.etag = etag; }
+
+        public String getStorageClass() { return storageClass; }
+        public void setStorageClass(String storageClass) { this.storageClass = storageClass; }
+    }
+
+    /**
+     * Represents a paginated list result.
+     */
+    class ListResult {
+        private List<ObjectSummary> objects;
+        private String nextContinuationToken;
+        private boolean truncated;
+        private String prefix;
+
+        public ListResult(List<ObjectSummary> objects, String nextContinuationToken, boolean truncated, String prefix) {
+            this.objects = objects;
+            this.nextContinuationToken = nextContinuationToken;
+            this.truncated = truncated;
+            this.prefix = prefix;
+        }
+
+        public List<ObjectSummary> getObjects() { return objects; }
+        public String getNextContinuationToken() { return nextContinuationToken; }
+        public boolean isTruncated() { return truncated; }
+        public String getPrefix() { return prefix; }
+    }
+
+    /**
+     * Represents the result of a multipart upload.
+     */
+    class UploadResult {
+        private String etag;
+        private String location;
+        private String bucketName;
+        private String key;
+
+        public UploadResult(String etag, String location, String bucketName, String key) {
+            this.etag = etag;
+            this.location = location;
+            this.bucketName = bucketName;
+            this.key = key;
+        }
+
+        public String getEtag() { return etag; }
+        public String getLocation() { return location; }
+        public String getBucketName() { return bucketName; }
+        public String getKey() { return key; }
+    }
+
+    /**
+     * Represents the result of an object deletion.
+     */
+    class DeletionResult {
+        private String key;
+        private boolean successful;
+        private String errorCode;
+        private String errorMessage;
+
+        public DeletionResult(String key, boolean successful) {
+            this.key = key;
+            this.successful = successful;
+        }
+
+        public DeletionResult(String key, String errorCode, String errorMessage) {
+            this.key = key;
+            this.successful = false;
+            this.errorCode = errorCode;
+            this.errorMessage = errorMessage;
+        }
+
+        public String getKey() { return key; }
+        public boolean isSuccessful() { return successful; }
+        public String getErrorCode() { return errorCode; }
+        public String getErrorMessage() { return errorMessage; }
     }
 
     /**
@@ -369,5 +506,35 @@ public interface StorageClient {
         public long getLastUpdated() {
             return lastUpdated;
         }
+    }
+
+    /**
+     * Represents a lifecycle rule for automatic object management.
+     */
+    class LifecycleRule {
+        private String id;
+        private String prefix;
+        private boolean enabled;
+        private int expirationDays;
+        private String storageClassTransition;
+        private int transitionDays;
+
+        public String getId() { return id; }
+        public void setId(String id) { this.id = id; }
+
+        public String getPrefix() { return prefix; }
+        public void setPrefix(String prefix) { this.prefix = prefix; }
+
+        public boolean isEnabled() { return enabled; }
+        public void setEnabled(boolean enabled) { this.enabled = enabled; }
+
+        public int getExpirationDays() { return expirationDays; }
+        public void setExpirationDays(int expirationDays) { this.expirationDays = expirationDays; }
+
+        public String getStorageClassTransition() { return storageClassTransition; }
+        public void setStorageClassTransition(String storageClassTransition) { this.storageClassTransition = storageClassTransition; }
+
+        public int getTransitionDays() { return transitionDays; }
+        public void setTransitionDays(int transitionDays) { this.transitionDays = transitionDays; }
     }
 }

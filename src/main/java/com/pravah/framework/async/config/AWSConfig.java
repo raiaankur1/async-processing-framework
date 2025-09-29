@@ -16,7 +16,7 @@ import java.time.Duration;
  * credentials, regions, and service-specific settings.
  *
  * @author Ankur Rai
- * @version 2.0
+ * @version 1.0
  */
 @ConfigurationProperties(prefix = "async.framework.aws")
 @Validated

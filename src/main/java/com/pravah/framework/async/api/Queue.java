@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Enhanced Queue interface for async request message handling.
+ * Queue interface for async request message handling.
  * <br>
  * This interface provides comprehensive queue operations including
  * message sending, receiving, batch operations, and dead letter queue support.
@@ -41,10 +41,17 @@ public interface Queue {
      * @param messageBody the message body
      * @param delaySeconds delay before message becomes visible
      * @param attributes message attributes
-     * @return message ID
      * @throws AsyncFrameworkException if send fails
      */
-    String sendMessageWithBody(String messageBody, int delaySeconds, Map<String, String> attributes);
+    void sendMessageWithBody(String messageBody, int delaySeconds, Map<String, String> attributes);
+
+    /**
+     * Sends multiple messages in a single batch operation (up to 10 messages).
+     *
+     * @param messages List of messages to send
+     * @throws com.pravah.framework.async.exception.AsyncFrameworkException if batch send fails
+     */
+    void sendMessages(List<QueueMessage> messages);
 
     /**
      * Receive messages from the queue.
@@ -57,13 +64,15 @@ public interface Queue {
     List<QueueMessage> receiveMessages(int maxMessages, int waitTimeSeconds);
 
     /**
-     * Receive a single message from the queue.
+     * Receives messages with custom visibility timeout.
      *
-     * @param waitTimeSeconds long polling wait time
-     * @return received message, or null if none available
+     * @param maxMessages Maximum number of messages to receive (1-10)
+     * @param waitTimeSeconds Long polling wait time in seconds (0-20)
+     * @param visibilityTimeoutSeconds Visibility timeout for received messages
+     * @return List of received messages
      * @throws AsyncFrameworkException if receive fails
      */
-    QueueMessage receiveMessage(int waitTimeSeconds);
+    List<QueueMessage> receiveMessages(int maxMessages, int waitTimeSeconds, int visibilityTimeoutSeconds);
 
     /**
      * Delete a message from the queue.
@@ -74,22 +83,12 @@ public interface Queue {
     void deleteMessage(String receiptHandle);
 
     /**
-     * Batch send multiple messages.
-     *
-     * @param messages list of messages to send
-     * @return list of successful message IDs
-     * @throws AsyncFrameworkException if batch send fails
-     */
-    List<String> sendMessages(List<BatchMessage> messages);
-
-    /**
      * Batch delete multiple messages.
      *
      * @param receiptHandles list of receipt handles to delete
-     * @return number of successfully deleted messages
      * @throws AsyncFrameworkException if batch delete fails
      */
-    int deleteMessages(List<String> receiptHandles);
+    void deleteMessages(List<String> receiptHandles);
 
     /**
      * Change the visibility timeout of a message.
@@ -101,12 +100,36 @@ public interface Queue {
     void changeMessageVisibility(String receiptHandle, int visibilityTimeoutSeconds);
 
     /**
+     * Changes the visibility timeout of multiple messages in a batch operation.
+     *
+     * @param visibilityChanges List of visibility change requests
+     * @throws com.pravah.framework.async.exception.AsyncFrameworkException if batch visibility change fails
+     */
+    void changeMessagesVisibility(List<VisibilityChange> visibilityChanges);
+
+    /**
+     * Gets the approximate number of messages in the queue.
+     *
+     * @return Approximate number of messages
+     * @throws com.pravah.framework.async.exception.AsyncFrameworkException if attribute retrieval fails
+     */
+    int getApproximateMessageCount();
+
+    /**
+     * Gets the approximate number of messages not visible (in flight).
+     *
+     * @return Approximate number of in-flight messages
+     * @throws com.pravah.framework.async.exception.AsyncFrameworkException if attribute retrieval fails
+     */
+    int getApproximateInFlightMessageCount();
+
+    /**
      * Get queue attributes and statistics.
      *
      * @return queue attributes
      * @throws AsyncFrameworkException if query fails
      */
-    QueueAttributes getQueueAttributes();
+    Map<String, String> getQueueAttributes();
 
     /**
      * Purge all messages from the queue.
@@ -130,22 +153,42 @@ public interface Queue {
     String getQueueUrl();
 
     /**
-     * Get the queue type (e.g., "SQS", "RabbitMQ").
+     * Gets the dead letter queue URL if configured.
      *
-     * @return queue type
+     * @return The dead letter queue URL, or null if not configured
      */
-    String getQueueType();
+    String getDeadLetterQueueUrl();
 
     /**
      * Represents a message received from the queue.
      */
     class QueueMessage {
-        private final String messageId;
-        private final String receiptHandle;
-        private final String body;
-        private final Map<String, String> attributes;
-        private final int receiveCount;
-        private final long receivedTimestamp;
+        private String messageId;
+        private String receiptHandle;
+        private String body;
+        private Map<String, String> attributes;
+        private Map<String, String> messageAttributes;
+        private int receiveCount;
+        private String md5OfBody;
+        private String md5OfMessageAttributes;
+        private int delaySeconds;
+
+        public QueueMessage() {}
+
+        public QueueMessage(String body) {
+            this.body = body;
+        }
+
+        public QueueMessage(String body, int delaySeconds) {
+            this.body = body;
+            this.delaySeconds = delaySeconds;
+        }
+
+        public QueueMessage(String body, int delaySeconds, Map<String, String> messageAttributes) {
+            this.body = body;
+            this.delaySeconds = delaySeconds;
+            this.messageAttributes = messageAttributes;
+        }
 
         public QueueMessage(String messageId, String receiptHandle, String body,
                             Map<String, String> attributes, int receiveCount) {
@@ -154,37 +197,46 @@ public interface Queue {
             this.body = body;
             this.attributes = attributes;
             this.receiveCount = receiveCount;
-            this.receivedTimestamp = System.currentTimeMillis();
         }
 
         public String getMessageId() {
             return messageId;
         }
-
+        public void setMessageId(String messageId) { this.messageId = messageId; }
         public String getReceiptHandle() {
             return receiptHandle;
         }
-
+        public void setReceiptHandle(String receiptHandle) { this.receiptHandle = receiptHandle; }
         public String getBody() {
             return body;
         }
-
+        public void setBody(String body) { this.body = body; }
         public Map<String, String> getAttributes() {
             return attributes;
         }
-
+        public void setAttributes(Map<String, String> attributes) {
+            this.attributes = attributes;
+        }
         public String getAttribute(String key) {
             return attributes != null ? attributes.get(key) : null;
+        }
+
+        public Map<String, String> getMessageAttributes() { return messageAttributes; }
+        public void setMessageAttributes(Map<String, String> messageAttributes) {
+            this.messageAttributes = messageAttributes;
         }
 
         public int getReceiveCount() {
             return receiveCount;
         }
+        public void setReceiveCount(int receiveCount) { this.receiveCount = receiveCount; }
+        public String getMd5OfBody() { return md5OfBody; }
+        public void setMd5OfBody(String md5OfBody) { this.md5OfBody = md5OfBody; }
+        public String getMd5OfMessageAttributes() { return md5OfMessageAttributes; }
+        public void setMd5OfMessageAttributes(String md5OfMessageAttributes) { this.md5OfMessageAttributes = md5OfMessageAttributes; }
 
-        public long getReceivedTimestamp() {
-            return receivedTimestamp;
-        }
-
+        public int getDelaySeconds() { return delaySeconds; }
+        public void setDelaySeconds(int delaySeconds) { this.delaySeconds = delaySeconds; }
         public boolean isFirstReceive() {
             return receiveCount == 1;
         }
@@ -306,5 +358,24 @@ public interface Queue {
         public int getTotalMessages() {
             return approximateNumberOfMessages + approximateNumberOfMessagesNotVisible + approximateNumberOfMessagesDelayed;
         }
+    }
+
+    /**
+     * Represents a visibility timeout change request.
+     */
+    class VisibilityChange {
+        private String receiptHandle;
+        private int visibilityTimeoutSeconds;
+
+        public VisibilityChange() {}
+
+        public VisibilityChange(String receiptHandle, int visibilityTimeoutSeconds) {
+            this.receiptHandle = receiptHandle;
+            this.visibilityTimeoutSeconds = visibilityTimeoutSeconds;
+        }
+        public String getReceiptHandle() { return receiptHandle; }
+        public void setReceiptHandle(String receiptHandle) { this.receiptHandle = receiptHandle; }
+        public int getVisibilityTimeoutSeconds() { return visibilityTimeoutSeconds; }
+        public void setVisibilityTimeoutSeconds(int visibilityTimeoutSeconds) { this.visibilityTimeoutSeconds = visibilityTimeoutSeconds; }
     }
 }

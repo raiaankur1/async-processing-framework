@@ -16,7 +16,7 @@ import java.util.Map;
  * polling configuration, and message handling parameters.
  *
  * @author Ankur Rai
- * @version 2.0
+ * @version 1.0
  */
 @ConfigurationProperties(prefix = "async.framework.aws.sqs")
 @Validated

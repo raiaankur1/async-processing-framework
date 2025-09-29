@@ -24,19 +24,19 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Enhanced abstract base class for asynchronous request processing.
- *
+ * Abstract base class for asynchronous request processing.
+ * <br>
  * This class provides a comprehensive framework for handling distributed
  * asynchronous operations
  * with support for:
  * - CompletableFuture-based async processing
  * - Exponential backoff retry logic
  * - Metrics collection integration
- * - Enhanced error handling and lifecycle management
+ * - Comprehensive error handling and lifecycle management
  * - Payload storage optimization (inline vs external)
  *
  * @author Ankur Rai
- * @version 2.0
+ * @version 1.0
  */
 public abstract class AsyncRequest {
 
@@ -54,10 +54,10 @@ public abstract class AsyncRequest {
 
     // Status tracking
     @JsonProperty("status")
-    private Map<AsyncRequestAPI, AsyncRequestStatus> status;
+    private AsyncRequestStatus status;
 
-    @JsonProperty("overallStatus")
-    private AsyncRequestStatus overallStatus;
+    @JsonProperty("apiStatus")
+    private Map<AsyncRequestAPI, AsyncRequestStatus> apiStatus;
 
     // Payload handling
     @JsonProperty("inlinePayload")
@@ -117,18 +117,18 @@ public abstract class AsyncRequest {
      * Constructor for creating a new AsyncRequest with dependencies.
      */
     protected AsyncRequest(AsyncDAO asyncDAO, Queue queue, StorageClient storageClient,
-                           MetricsCollector metricsCollector) {
+            MetricsCollector metricsCollector) {
         this.asyncDAO = asyncDAO;
         this.queue = queue;
         this.storageClient = storageClient;
         this.metricsCollector = metricsCollector;
         this.requestId = generateRequestId();
         this.createdAt = Instant.now();
-        this.overallStatus = AsyncRequestStatus.CREATED;
+        this.status = AsyncRequestStatus.CREATED;
         this.retryCount = 0;
         this.maxRetries = 3; // Default value
         this.config = new AsyncRequestConfig();
-        this.initializeStatus();
+        this.initializeApiStatus();
     }
 
     /**
@@ -137,20 +137,20 @@ public abstract class AsyncRequest {
     protected AsyncRequest() {
         this.requestId = generateRequestId();
         this.createdAt = Instant.now();
-        this.overallStatus = AsyncRequestStatus.CREATED;
+        this.status = AsyncRequestStatus.CREATED;
         this.retryCount = 0;
         this.maxRetries = 3;
         this.config = new AsyncRequestConfig();
     }
 
     /**
-     * Initialize the status map for all required APIs.
+     * Initialize the API status map for all required APIs.
      */
-    private void initializeStatus() {
-        this.status = new HashMap<>();
+    private void initializeApiStatus() {
+        this.apiStatus = new HashMap<>();
         List<AsyncRequestAPI> apis = this.getRequiredAPIs();
         for (AsyncRequestAPI api : apis) {
-            this.status.put(api, AsyncRequestStatus.CREATED);
+            this.apiStatus.put(api, AsyncRequestStatus.CREATED);
         }
     }
 
@@ -324,8 +324,8 @@ public abstract class AsyncRequest {
         metricsCollector.recordRequestCompleted(type, processingTime);
 
         // Update individual API statuses to completed
-        for (AsyncRequestAPI api : status.keySet()) {
-            status.put(api, AsyncRequestStatus.COMPLETED);
+        for (AsyncRequestAPI api : apiStatus.keySet()) {
+            apiStatus.put(api, AsyncRequestStatus.COMPLETED);
         }
 
         // Persist final state
@@ -373,8 +373,8 @@ public abstract class AsyncRequest {
      * Update the overall status and persist if DAO is available.
      */
     private void updateStatus(AsyncRequestStatus newStatus) {
-        AsyncRequestStatus oldStatus = this.overallStatus;
-        this.overallStatus = newStatus;
+        AsyncRequestStatus oldStatus = this.status;
+        this.status = newStatus;
 
         logger.debug("Status updated for request {} from {} to {}", requestId, oldStatus, newStatus);
 
@@ -411,10 +411,10 @@ public abstract class AsyncRequest {
      * Check if the request processing is complete and successful.
      */
     public final boolean isSuccess() {
-        return overallStatus == AsyncRequestStatus.COMPLETED &&
-                !status.values().contains(AsyncRequestStatus.CREATED) &&
-                !status.values().contains(AsyncRequestStatus.PROCESSING) &&
-                !status.values().contains(AsyncRequestStatus.RETRYING);
+        return status == AsyncRequestStatus.COMPLETED &&
+                !apiStatus.values().contains(AsyncRequestStatus.CREATED) &&
+                !apiStatus.values().contains(AsyncRequestStatus.PROCESSING) &&
+                !apiStatus.values().contains(AsyncRequestStatus.RETRYING);
     }
 
     /**
@@ -424,7 +424,7 @@ public abstract class AsyncRequest {
         if (api == null) {
             throw new IllegalArgumentException("API cannot be null");
         }
-        return status.get(api) == AsyncRequestStatus.COMPLETED;
+        return apiStatus.get(api) == AsyncRequestStatus.COMPLETED;
     }
 
     /**
@@ -470,7 +470,7 @@ public abstract class AsyncRequest {
                 asyncDAO.updateSuccess(requestId, api);
             }
 
-            status.put(api, AsyncRequestStatus.COMPLETED);
+            apiStatus.put(api, AsyncRequestStatus.COMPLETED);
             logger.info("API {} marked as completed for request {}", api, requestId);
 
             // Check if all APIs are completed
@@ -595,17 +595,22 @@ public abstract class AsyncRequest {
         return this;
     }
 
-    public Map<AsyncRequestAPI, AsyncRequestStatus> getStatus() {
-        return new HashMap<>(status); // Return defensive copy
+    public AsyncRequestStatus getStatus() {
+        return status;
     }
 
-    public AsyncRequest withStatus(Map<AsyncRequestAPI, AsyncRequestStatus> status) {
-        this.status = new HashMap<>(status);
+    public AsyncRequest withStatus(AsyncRequestStatus status) {
+        this.status = status;
         return this;
     }
 
-    public AsyncRequestStatus getOverallStatus() {
-        return overallStatus;
+    public Map<AsyncRequestAPI, AsyncRequestStatus> getApiStatus() {
+        return new HashMap<>(apiStatus); // Return defensive copy
+    }
+
+    public AsyncRequest withApiStatus(Map<AsyncRequestAPI, AsyncRequestStatus> apiStatus) {
+        this.apiStatus = new HashMap<>(apiStatus);
+        return this;
     }
 
     public int getPollingDelayInSecs() {
@@ -643,12 +648,20 @@ public abstract class AsyncRequest {
         return lastProcessedAt;
     }
 
+    public void setLastProcessedAt(Instant lastProcessedAt) {
+        this.lastProcessedAt = lastProcessedAt;
+    }
+
     public Instant getCompletedAt() {
         return completedAt;
     }
 
     public int getRetryCount() {
         return retryCount;
+    }
+
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
     }
 
     public int getMaxRetries() {
@@ -666,6 +679,14 @@ public abstract class AsyncRequest {
 
     public String getErrorCode() {
         return errorCode;
+    }
+
+    public String getErrorMessage() {
+        return lastError;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.lastError = errorMessage;
     }
 
     public AsyncRequestConfig getConfig() {
@@ -698,6 +719,6 @@ public abstract class AsyncRequest {
     @Override
     public String toString() {
         return String.format("AsyncRequest{requestId='%s', appId='%s', type=%s, status=%s, retryCount=%d}",
-                requestId, appId, type, overallStatus, retryCount);
+                requestId, appId, type, status, retryCount);
     }
 }

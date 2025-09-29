@@ -5,14 +5,16 @@ import com.pravah.framework.async.model.AsyncRequest;
 import com.pravah.framework.async.model.AsyncRequestAPI;
 import com.pravah.framework.async.model.AsyncRequestStatus;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
- * Enhanced Data Access Object interface for async request persistence.
+ * Data Access Object interface for async request persistence.
  * <br>
- * This interface provides comprehensive CRUD operations for async requests
- * with support for status tracking, querying, and batch operations.
+ * Provides comprehensive CRUD operations for async requests
+ * with batch support, status filtering, and TTL management for automatic cleanup.
  *
  * @author Ankur Rai
  * @version 2.0
@@ -20,16 +22,41 @@ import java.util.Optional;
 public interface AsyncDAO {
 
     /**
-     * Create a new async request in the data store.
+     * Creates a new async request in the data store.
      *
-     * @param request the async request to create
+     * @param request The async request to create
      * @throws AsyncFrameworkException if creation fails
      */
     void createRequest(AsyncRequest request);
 
     /**
-     * Update the success status for a specific API in the request.
+     * Creates multiple async requests in a single batch operation.
      *
+     * @param requests List of async requests to create
+     * @throws AsyncFrameworkException if batch creation fails
+     */
+    void createRequests(List<AsyncRequest> requests);
+
+    /**
+     * Retrieves an async request by its ID.
+     *
+     * @param requestId The unique identifier of the request
+     * @return Optional containing the request if found, empty otherwise
+     * @throws AsyncFrameworkException if retrieval fails
+     */
+    Optional<AsyncRequest> getAsyncRequest(String requestId);
+
+    /**
+     * Retrieves multiple async requests by their IDs in a single batch operation.
+     *
+     * @param requestIds List of request IDs to retrieve
+     * @return Map of request ID to AsyncRequest for found requests
+     * @throws AsyncFrameworkException if batch retrieval fails
+     */
+    Map<String, AsyncRequest> getAsyncRequests(List<String> requestIds);
+
+    /**
+     * Update the success status for a specific API in the request.
      * @param requestId the request ID
      * @param api the API that completed successfully
      * @throws AsyncFrameworkException if update fails
@@ -37,70 +64,83 @@ public interface AsyncDAO {
     void updateSuccess(String requestId, AsyncRequestAPI api);
 
     /**
-     * Update the overall status of a request.
+     * Updates the status of a specific API within an async request.
      *
-     * @param requestId the request ID
-     * @param status the new status
+     * @param requestId The unique identifier of the request
+     * @param api The API whose status should be updated
+     * @param status The new status for the API
+     * @throws AsyncFrameworkException if update fails
+     */
+    void updateAPIStatus(String requestId, AsyncRequestAPI api, AsyncRequestStatus status);
+
+    /**
+     * Updates the overall status of an async request.
+     *
+     * @param requestId The unique identifier of the request
+     * @param status The new overall status
      * @throws AsyncFrameworkException if update fails
      */
     void updateStatus(String requestId, AsyncRequestStatus status);
 
     /**
-     * Update the error information for a request.
+     * Updates the overall status and last processed timestamp of an async request.
      *
-     * @param requestId the request ID
-     * @param errorMessage the error message
-     * @param errorCode the error code
+     * @param requestId The unique identifier of the request
+     * @param status The new overall status
+     * @param lastProcessedAt The timestamp when the request was last processed
      * @throws AsyncFrameworkException if update fails
      */
-    void updateError(String requestId, String errorMessage, String errorCode);
+    void updateStatus(String requestId, AsyncRequestStatus status, Instant lastProcessedAt);
 
     /**
-     * Increment the retry count for a request.
+     * Increments the retry count for an async request.
      *
-     * @param requestId the request ID
-     * @return the new retry count
+     * @param requestId The unique identifier of the request
+     * @return The new retry count after increment
      * @throws AsyncFrameworkException if update fails
      */
     int incrementRetryCount(String requestId);
 
     /**
-     * Get an async request by ID.
+     * Updates the error message for an async request.
      *
-     * @param requestId the request ID
-     * @return the async request, or empty if not found
-     * @throws AsyncFrameworkException if retrieval fails
+     * @param requestId The unique identifier of the request
+     * @param errorMessage The error message to store
+     * @throws AsyncFrameworkException if update fails
      */
-    Optional<AsyncRequest> getAsyncRequest(String requestId);
+    void updateErrorMessage(String requestId, String errorMessage);
 
     /**
-     * Get async requests by status.
+     * Retrieves async requests by their overall status.
+     * Uses Global Secondary Index for efficient querying.
      *
-     * @param status the status to filter by
-     * @return list of requests with the specified status
+     * @param status The status to filter by
+     * @return List of requests with the specified status
      * @throws AsyncFrameworkException if query fails
      */
     List<AsyncRequest> getRequestsByStatus(AsyncRequestStatus status);
 
     /**
-     * Get async requests by status with pagination.
+     * Retrieves async requests by status with pagination support.
      *
-     * @param status the status to filter by
-     * @param limit maximum number of results
-     * @param lastEvaluatedKey pagination token (null for first page)
-     * @return paginated list of requests
+     * @param status The status to filter by
+     * @param limit Maximum number of requests to return
+     * @param lastEvaluatedKey The last evaluated key from previous query (for pagination)
+     * @return Paginated result containing requests and next page token
      * @throws AsyncFrameworkException if query fails
      */
     PaginatedResult<AsyncRequest> getRequestsByStatus(AsyncRequestStatus status, int limit, String lastEvaluatedKey);
 
     /**
-     * Get async requests by application ID.
+     * Retrieves async requests by status within a time range.
      *
-     * @param appId the application ID
-     * @return list of requests for the application
+     * @param status The status to filter by
+     * @param fromTime Start of time range (inclusive)
+     * @param toTime End of time range (exclusive)
+     * @return List of requests matching the criteria
      * @throws AsyncFrameworkException if query fails
      */
-    List<AsyncRequest> getRequestsByAppId(String appId);
+    List<AsyncRequest> getRequestsByStatusAndTimeRange(AsyncRequestStatus status, Instant fromTime, Instant toTime);
 
     /**
      * Get async requests by type and status.
@@ -113,8 +153,15 @@ public interface AsyncDAO {
     List<AsyncRequest> getRequestsByTypeAndStatus(String type, AsyncRequestStatus status);
 
     /**
-     * Get requests that are stuck (processing for too long).
+     * Retrieves async requests by application ID.
      *
+     * @param appId The application ID to filter by
+     * @return List of requests for the specified application
+     * @throws AsyncFrameworkException if query fails
+     */
+    List<AsyncRequest> getRequestsByAppId(String appId);
+
+    /**
      * @param timeoutMinutes requests processing longer than this are considered stuck
      * @return list of stuck requests
      * @throws AsyncFrameworkException if query fails
@@ -130,22 +177,21 @@ public interface AsyncDAO {
     List<AsyncRequest> getRetryableRequests();
 
     /**
-     * Delete an async request.
+     * Deletes an async request by its ID.
      *
-     * @param requestId the request ID to delete
+     * @param requestId The unique identifier of the request to delete
      * @return true if deleted, false if not found
      * @throws AsyncFrameworkException if deletion fails
      */
-    boolean deleteRequest(String requestId);
+    void deleteRequest(String requestId);
 
     /**
-     * Batch create multiple requests.
+     * Deletes multiple async requests in a single batch operation.
      *
-     * @param requests list of requests to create
-     * @return list of successfully created request IDs
-     * @throws AsyncFrameworkException if batch operation fails
+     * @param requestIds List of request IDs to delete
+     * @throws AsyncFrameworkException if batch deletion fails
      */
-    List<String> batchCreateRequests(List<AsyncRequest> requests);
+    void deleteRequests(List<String> requestIds);
 
     /**
      * Batch update request statuses.
@@ -154,7 +200,7 @@ public interface AsyncDAO {
      * @return number of successfully updated requests
      * @throws AsyncFrameworkException if batch operation fails
      */
-    int batchUpdateStatus(java.util.Map<String, AsyncRequestStatus> updates);
+    int batchUpdateStatus(Map<String, AsyncRequestStatus> updates);
 
     /**
      * Get request statistics by status.
@@ -162,7 +208,7 @@ public interface AsyncDAO {
      * @return map of status to count
      * @throws AsyncFrameworkException if query fails
      */
-    java.util.Map<AsyncRequestStatus, Long> getRequestStatistics();
+    Map<AsyncRequestStatus, Long> getRequestStatistics();
 
     /**
      * Clean up old completed requests.
@@ -174,45 +220,47 @@ public interface AsyncDAO {
     int cleanupOldRequests(int olderThanDays);
 
     /**
-     * Check if the DAO is healthy and can perform operations.
+     * Sets TTL (Time To Live) for an async request for automatic cleanup.
      *
-     * @return true if healthy, false otherwise
+     * @param requestId The unique identifier of the request
+     * @param ttlTimestamp The timestamp when the request should be automatically deleted
+     * @throws AsyncFrameworkException if TTL update fails
+     */
+    void setTTL(String requestId, Instant ttlTimestamp);
+
+    /**
+     * Checks if the underlying data store is healthy and accessible.
+     *
+     * @return true if the data store is healthy, false otherwise
      */
     boolean isHealthy();
 
     /**
-     * Get the underlying data store type (e.g., "DynamoDB", "MongoDB").
+     * Represents a paginated result from a query operation.
      *
-     * @return data store type
-     */
-    String getDataStoreType();
-
-    /**
-     * Result wrapper for paginated queries.
-     *
-     * @param <T> the type of items in the result
+     * @param <T> The type of items in the result
      */
     class PaginatedResult<T> {
         private final List<T> items;
-        private final String lastEvaluatedKey;
-        private final boolean hasMore;
+        private final String nextPageToken;
+        private final boolean hasMoreResults;
 
-        public PaginatedResult(List<T> items, String lastEvaluatedKey, boolean hasMore) {
+        public PaginatedResult(List<T> items, String nextPageToken, boolean hasMoreResults) {
             this.items = items;
-            this.lastEvaluatedKey = lastEvaluatedKey;
-            this.hasMore = hasMore;
+            this.nextPageToken = nextPageToken;
+            this.hasMoreResults = hasMoreResults;
         }
 
         public List<T> getItems() {
             return items;
         }
 
-        public String getLastEvaluatedKey() {
-            return lastEvaluatedKey;
+        public String getNextPageToken() {
+            return nextPageToken;
         }
 
-        public boolean hasMore() {
-            return hasMore;
+        public boolean hasMoreResults() {
+            return hasMoreResults;
         }
 
         public int size() {
@@ -222,5 +270,6 @@ public interface AsyncDAO {
         public boolean isEmpty() {
             return items.isEmpty();
         }
+
     }
 }

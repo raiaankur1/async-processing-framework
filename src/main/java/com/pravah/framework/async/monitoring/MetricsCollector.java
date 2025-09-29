@@ -11,7 +11,7 @@ import java.time.Duration;
  * for monitoring async request processing performance and health.
  *
  * @author Ankur Rai
- * @version 2.0
+ * @version 1.0
  */
 public interface MetricsCollector {
 

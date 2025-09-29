@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  * This enum is extensible and supports custom API types through registration.
  *
  * @author Ankur Rai
- * @version 2.0
+ * @version 1.0
  */
 public enum AsyncRequestAPI {
 

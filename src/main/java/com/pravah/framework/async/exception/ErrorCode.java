@@ -7,7 +7,7 @@ package com.pravah.framework.async.exception;
  * and provides a human-readable description.
  *
  * @author Ankur Rai
- * @version 2.0
+ * @version 1.0
  */
 public enum ErrorCode {
 
@@ -22,6 +22,7 @@ public enum ErrorCode {
     TIMEOUT_ERROR("TIMEOUT_ERROR", "Operation timed out", true),
 
     // Infrastructure errors (retryable)
+    CLOUD_PROVIDER_ERROR("CLOUD_PROVIDER_ERROR", "Cloud provider service error", true),
     QUEUE_ERROR("QUEUE_ERROR", "Queue operation failed", true),
     STORAGE_ERROR("STORAGE_ERROR", "Storage operation failed", true),
     DATABASE_ERROR("DATABASE_ERROR", "Database operation failed", true),

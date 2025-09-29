@@ -7,7 +7,7 @@ package com.pravah.framework.async.exception;
  * error codes, request context, and retry hints.
  *
  * @author Ankur Rai
- * @version 2.0
+ * @version 1.0
  */
 public class AsyncFrameworkException extends RuntimeException {
 
