@@ -79,7 +79,11 @@ public enum AsyncRequestQueueType {
     private static final Map<String, AsyncRequestQueueType> QUEUE_LOOKUP = Arrays.stream(values())
             .collect(Collectors.toMap(AsyncRequestQueueType::getQueueName, Function.identity()));
     private static final Map<Integer, AsyncRequestQueueType> DELAY_LOOKUP = Arrays.stream(values())
-            .collect(Collectors.toMap(AsyncRequestQueueType::getDelaySeconds, Function.identity()));
+            .collect(Collectors.toMap(
+                AsyncRequestQueueType::getDelaySeconds, 
+                Function.identity(),
+                (existing, replacement) -> existing // Keep the first one in case of duplicates
+            ));
 
     AsyncRequestQueueType(int delaySeconds, String queueName, String description) {
         this.delaySeconds = delaySeconds;
