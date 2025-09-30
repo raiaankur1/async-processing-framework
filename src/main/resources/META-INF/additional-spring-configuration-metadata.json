@@ -360,6 +360,65 @@
       "type": "java.lang.Boolean",
       "defaultValue": true,
       "description": "Whether the error tracker is enabled."
+    },
+    {
+      "name": "async.framework.tracing.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "Whether distributed tracing is enabled for the async framework."
+    },
+    {
+      "name": "async.framework.tracing.service-name",
+      "type": "java.lang.String",
+      "defaultValue": "async-processing-framework",
+      "description": "Service name for tracing spans."
+    },
+    {
+      "name": "async.framework.tracing.xray.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Whether AWS X-Ray tracing is enabled."
+    },
+    {
+      "name": "async.framework.tracing.xray.region",
+      "type": "java.lang.String",
+      "description": "AWS region for X-Ray service."
+    },
+    {
+      "name": "async.framework.tracing.xray.daemon-address",
+      "type": "java.lang.String",
+      "defaultValue": "127.0.0.1:2000",
+      "description": "Address of the X-Ray daemon."
+    },
+    {
+      "name": "async.framework.tracing.xray.use-aws-plugin",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "Whether to use AWS plugins for service detection."
+    },
+    {
+      "name": "async.framework.tracing.zipkin.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Whether Zipkin tracing is enabled."
+    },
+    {
+      "name": "async.framework.tracing.zipkin.base-url",
+      "type": "java.lang.String",
+      "defaultValue": "http://localhost:9411",
+      "description": "Base URL for Zipkin server."
+    },
+    {
+      "name": "async.framework.tracing.sampling.probability",
+      "type": "java.lang.Float",
+      "defaultValue": 0.1,
+      "description": "Sampling probability for traces (0.0 to 1.0)."
+    },
+    {
+      "name": "async.framework.tracing.sampling.rate-limit",
+      "type": "java.lang.Integer",
+      "defaultValue": 100,
+      "description": "Rate limit for traces per second."
     }
   ],
   "hints": [
