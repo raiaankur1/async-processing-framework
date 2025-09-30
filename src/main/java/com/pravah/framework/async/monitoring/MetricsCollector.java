@@ -258,6 +258,91 @@ public interface MetricsCollector {
     void recordHealthCheck(String componentName, boolean healthy, Duration responseTime);
 
     /**
+     * Record retry success.
+     *
+     * @param requestId the request ID
+     * @param attemptNumber the attempt number
+     */
+    void recordRetrySuccess(String requestId, int attemptNumber);
+
+    /**
+     * Record retry failure.
+     *
+     * @param requestId the request ID
+     * @param attemptNumber the attempt number
+     * @param errorCode the error code
+     */
+    void recordRetryFailure(String requestId, int attemptNumber, com.pravah.framework.async.exception.ErrorCode errorCode);
+
+    /**
+     * Record retry exhausted.
+     *
+     * @param requestId the request ID
+     * @param finalAttempt the final attempt number
+     */
+    void recordRetryExhausted(String requestId, int finalAttempt);
+
+    /**
+     * Record circuit breaker opened.
+     *
+     * @param circuitBreakerKey the circuit breaker key
+     */
+    void recordCircuitBreakerOpen(String circuitBreakerKey);
+
+    /**
+     * Record circuit breaker success.
+     *
+     * @param circuitBreakerKey the circuit breaker key
+     */
+    void recordCircuitBreakerSuccess(String circuitBreakerKey);
+
+    /**
+     * Record circuit breaker failure.
+     *
+     * @param circuitBreakerKey the circuit breaker key
+     */
+    void recordCircuitBreakerFailure(String circuitBreakerKey);
+
+    /**
+     * Record circuit breaker state change.
+     *
+     * @param circuitBreakerKey the circuit breaker key
+     * @param newState the new state
+     */
+    void recordCircuitBreakerStateChange(String circuitBreakerKey, com.pravah.framework.async.services.CircuitBreakerManager.CircuitBreakerState newState);
+
+    /**
+     * Record dead letter queue message sent.
+     *
+     * @param requestId the request ID
+     * @param requestType the request type
+     */
+    void recordDeadLetterQueueSent(String requestId, String requestType);
+
+    /**
+     * Record dead letter queue error.
+     *
+     * @param requestId the request ID
+     * @param errorType the error type
+     */
+    void recordDeadLetterQueueError(String requestId, String errorType);
+
+    /**
+     * Record dead letter queue reprocessed.
+     *
+     * @param requestId the request ID
+     */
+    void recordDeadLetterQueueReprocessed(String requestId);
+
+    /**
+     * Record dead letter queue reprocess error.
+     *
+     * @param requestId the request ID
+     * @param errorType the error type
+     */
+    void recordDeadLetterQueueReprocessError(String requestId, String errorType);
+
+    /**
      * Get current metrics snapshot.
      *
      * @return metrics snapshot

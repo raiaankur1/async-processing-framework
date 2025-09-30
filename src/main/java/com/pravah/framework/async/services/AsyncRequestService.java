@@ -412,6 +412,69 @@ public class AsyncRequestService {
     }
 
     /**
+     * Gets an async request by ID.
+     *
+     * @param requestId the request ID
+     * @return the async request, or null if not found
+     */
+    public AsyncRequest getAsyncRequest(String requestId) {
+        return loadRequest(requestId);
+    }
+
+    /**
+     * Updates an async request in storage.
+     *
+     * @param request the request to update
+     * @throws AsyncFrameworkException if update fails
+     */
+    public void updateAsyncRequest(AsyncRequest request) {
+        ensureInitialized();
+        
+        if (request == null) {
+            throw new AsyncFrameworkException(
+                ErrorCode.CONFIGURATION_ERROR,
+                null,
+                "Request cannot be null"
+            );
+        }
+
+        try {
+            logger.debug("Updating AsyncRequest: {}", request.getRequestId());
+            asyncDAO.updateRequest(request);
+            logger.debug("Successfully updated AsyncRequest: {}", request.getRequestId());
+
+        } catch (Exception e) {
+            logger.error("Failed to update AsyncRequest: {}", request.getRequestId(), e);
+            throw new AsyncFrameworkException(
+                ErrorCode.PROCESSING_ERROR,
+                request.getRequestId(),
+                "Failed to update AsyncRequest: " + e.getMessage(),
+                e
+            );
+        }
+    }
+
+    /**
+     * Processes an async request directly.
+     *
+     * @param request the request to process
+     * @return CompletableFuture that resolves to the processing result
+     */
+    public CompletableFuture<Boolean> processAsyncRequest(AsyncRequest request) {
+        ensureInitialized();
+        
+        if (request == null) {
+            throw new AsyncFrameworkException(
+                ErrorCode.CONFIGURATION_ERROR,
+                null,
+                "Request cannot be null"
+            );
+        }
+
+        return processRequestAsync(request.getRequestId());
+    }
+
+    /**
      * Updates the status of an async request.
      *
      * @param requestId the request ID

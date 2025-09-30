@@ -111,6 +111,14 @@ public interface AsyncDAO {
     void updateErrorMessage(String requestId, String errorMessage);
 
     /**
+     * Updates an entire async request in the data store.
+     *
+     * @param request The async request to update
+     * @throws AsyncFrameworkException if update fails
+     */
+    void updateRequest(AsyncRequest request);
+
+    /**
      * Retrieves async requests by their overall status.
      * Uses Global Secondary Index for efficient querying.
      *

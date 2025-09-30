@@ -22,7 +22,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import zipkin2.reporter.brave.ZipkinSpanHandler;
-import zipkin2.reporter.urlconnection.URLConnectionSender;
+import zipkin2.reporter.okhttp3.OkHttpSender;
+import zipkin2.reporter.AsyncReporter;
 
 /**
  * Auto-configuration for distributed tracing in the async framework.
@@ -52,9 +53,14 @@ public class TracingAutoConfiguration {
         // Add Zipkin span handler if enabled
         if (tracingConfig.getZipkin().isEnabled()) {
             logger.info("Enabling Zipkin tracing to: {}", tracingConfig.getZipkin().getBaseUrl());
-            URLConnectionSender sender = URLConnectionSender.create(tracingConfig.getZipkin().getBaseUrl() + "/api/v2/spans");
-            ZipkinSpanHandler zipkinSpanHandler = ZipkinSpanHandler.create(sender);
-            tracingBuilder.addSpanHandler(zipkinSpanHandler);
+            try {
+                OkHttpSender sender = OkHttpSender.create(tracingConfig.getZipkin().getBaseUrl() + "/api/v2/spans");
+                AsyncReporter<zipkin2.Span> reporter = AsyncReporter.create(sender);
+                tracingBuilder.addSpanHandler(ZipkinSpanHandler.create(reporter));
+                logger.info("Successfully configured Zipkin span handler");
+            } catch (Exception e) {
+                logger.warn("Failed to configure Zipkin sender, continuing without Zipkin: {}", e.getMessage());
+            }
         }
         
         Tracing tracing = tracingBuilder.build();
@@ -81,9 +87,13 @@ public class TracingAutoConfiguration {
         
         // Add AWS plugins for service detection
         if (xrayConfig.isUseAwsPlugin()) {
-            builder.withPlugin(EC2Plugin.class)
-                   .withPlugin(ECSPlugin.class)
-                   .withPlugin(EKSPlugin.class);
+            try {
+                builder.withPlugin(new EC2Plugin())
+                       .withPlugin(new ECSPlugin())
+                       .withPlugin(new EKSPlugin());
+            } catch (Exception e) {
+                logger.warn("Failed to configure AWS X-Ray plugins: {}", e.getMessage());
+            }
         }
         
         // Configure sampling strategy
@@ -97,6 +107,17 @@ public class TracingAutoConfiguration {
         return recorder;
     }
     
+    /**
+     * Creates Zipkin sender if Zipkin is enabled
+     */
+    @Bean
+    @ConditionalOnProperty(prefix = "async.framework.tracing.zipkin", name = "enabled", havingValue = "true")
+    @ConditionalOnClass(OkHttpSender.class)
+    public OkHttpSender zipkinSender(TracingConfig tracingConfig) {
+        logger.info("Creating Zipkin OkHttp sender for: {}", tracingConfig.getZipkin().getBaseUrl());
+        return OkHttpSender.create(tracingConfig.getZipkin().getBaseUrl() + "/api/v2/spans");
+    }
+
     /**
      * Creates correlation ID manager for async operations
      */

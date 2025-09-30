@@ -113,7 +113,8 @@ public class AwsServiceTracer {
         String spanName = serviceName.toLowerCase() + "." + operation.toLowerCase().replace("_", "-");
         Span span = tracer.nextSpan().name(spanName);
         
-        try (Tracer.SpanInScope ws = tracer.withSpanInScope(span.start())) {
+        span.start();
+        try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
             // Add common AWS tags
             span.tag(TAG_AWS_SERVICE, serviceName);
             span.tag(TAG_AWS_OPERATION, operation);

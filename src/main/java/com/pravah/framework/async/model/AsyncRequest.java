@@ -706,6 +706,10 @@ public abstract class AsyncRequest {
         this.lastError = errorMessage;
     }
 
+    public void setStatus(AsyncRequestStatus status) {
+        this.status = status;
+    }
+
     public AsyncRequestConfig getConfig() {
         return config;
     }

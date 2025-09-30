@@ -366,6 +366,69 @@ public class DynamoDBAsyncDAO implements AsyncDAO {
     }
 
     @Override
+    public void updateRequest(AsyncRequest request) {
+        try {
+            Map<String, AttributeValue> item = convertToItem(request);
+            
+            // Remove the request_id from the item since it's the key
+            item.remove(ATTR_REQUEST_ID);
+            
+            // Build update expression dynamically
+            StringBuilder updateExpression = new StringBuilder("SET ");
+            Map<String, String> expressionAttributeNames = new HashMap<>();
+            Map<String, AttributeValue> expressionAttributeValues = new HashMap<>();
+            
+            boolean first = true;
+            for (Map.Entry<String, AttributeValue> entry : item.entrySet()) {
+                if (!first) {
+                    updateExpression.append(", ");
+                }
+                
+                String attrName = entry.getKey();
+                String placeholder = "#" + attrName.replace("_", "");
+                String valuePlaceholder = ":" + attrName.replace("_", "");
+                
+                updateExpression.append(placeholder).append(" = ").append(valuePlaceholder);
+                expressionAttributeNames.put(placeholder, attrName);
+                expressionAttributeValues.put(valuePlaceholder, entry.getValue());
+                
+                first = false;
+            }
+            
+            UpdateItemRequest updateRequest = UpdateItemRequest.builder()
+                    .tableName(tableName)
+                    .key(Map.of(ATTR_REQUEST_ID, AttributeValue.builder().s(request.getRequestId()).build()))
+                    .updateExpression(updateExpression.toString())
+                    .expressionAttributeNames(expressionAttributeNames)
+                    .expressionAttributeValues(expressionAttributeValues)
+                    .conditionExpression("attribute_exists(#requestId)")
+                    .build();
+            
+            // Add requestId to expression attribute names for condition
+            updateRequest = updateRequest.toBuilder()
+                    .expressionAttributeNames(Map.of("#requestId", ATTR_REQUEST_ID))
+                    .build();
+
+            dynamoDbClient.updateItem(updateRequest);
+            logger.debug("Updated async request: {}", request.getRequestId());
+
+        } catch (ConditionalCheckFailedException e) {
+            throw new AsyncFrameworkException(
+                    ErrorCode.PROCESSING_ERROR,
+                    request.getRequestId(),
+                    "Request not found: " + request.getRequestId(),
+                    e);
+        } catch (Exception e) {
+            logger.error("Failed to update async request: {}", request.getRequestId(), e);
+            throw new AsyncFrameworkException(
+                    ErrorCode.CLOUD_PROVIDER_ERROR,
+                    request.getRequestId(),
+                    "Failed to update request in DynamoDB: " + e.getMessage(),
+                    e);
+        }
+    }
+
+    @Override
     public List<AsyncRequest> getRequestsByStatus(AsyncRequestStatus status) {
         try {
             QueryRequest queryRequest = QueryRequest.builder()

@@ -1,0 +1,99 @@
+{
+  "groups": [
+    {
+      "name": "async.framework.tracing",
+      "type": "com.pravah.framework.async.tracing.TracingConfig",
+      "sourceType": "com.pravah.framework.async.tracing.TracingConfig"
+    },
+    {
+      "name": "async.framework.tracing.sampling",
+      "type": "com.pravah.framework.async.tracing.TracingConfig$SamplingConfig",
+      "sourceType": "com.pravah.framework.async.tracing.TracingConfig",
+      "sourceMethod": "getSampling()"
+    },
+    {
+      "name": "async.framework.tracing.xray",
+      "type": "com.pravah.framework.async.tracing.TracingConfig$XRayConfig",
+      "sourceType": "com.pravah.framework.async.tracing.TracingConfig",
+      "sourceMethod": "getXray()"
+    },
+    {
+      "name": "async.framework.tracing.zipkin",
+      "type": "com.pravah.framework.async.tracing.TracingConfig$ZipkinConfig",
+      "sourceType": "com.pravah.framework.async.tracing.TracingConfig",
+      "sourceMethod": "getZipkin()"
+    }
+  ],
+  "properties": [
+    {
+      "name": "async.framework.tracing.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether tracing is enabled",
+      "sourceType": "com.pravah.framework.async.tracing.TracingConfig",
+      "defaultValue": true
+    },
+    {
+      "name": "async.framework.tracing.sampling.probability",
+      "type": "java.lang.Float",
+      "description": "Sampling probability (0.0 to 1.0)",
+      "sourceType": "com.pravah.framework.async.tracing.TracingConfig$SamplingConfig",
+      "defaultValue": 0.1
+    },
+    {
+      "name": "async.framework.tracing.sampling.rate-limit",
+      "type": "java.lang.Integer",
+      "description": "Rate limiting for traces per second",
+      "sourceType": "com.pravah.framework.async.tracing.TracingConfig$SamplingConfig",
+      "defaultValue": 100
+    },
+    {
+      "name": "async.framework.tracing.service-name",
+      "type": "java.lang.String",
+      "description": "Service name for tracing",
+      "sourceType": "com.pravah.framework.async.tracing.TracingConfig",
+      "defaultValue": "async-processing-framework"
+    },
+    {
+      "name": "async.framework.tracing.xray.daemon-address",
+      "type": "java.lang.String",
+      "description": "X-Ray daemon address",
+      "sourceType": "com.pravah.framework.async.tracing.TracingConfig$XRayConfig",
+      "defaultValue": "127.0.0.1:2000"
+    },
+    {
+      "name": "async.framework.tracing.xray.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether AWS X-Ray tracing is enabled",
+      "sourceType": "com.pravah.framework.async.tracing.TracingConfig$XRayConfig",
+      "defaultValue": false
+    },
+    {
+      "name": "async.framework.tracing.xray.region",
+      "type": "java.lang.String",
+      "description": "AWS region for X-Ray",
+      "sourceType": "com.pravah.framework.async.tracing.TracingConfig$XRayConfig"
+    },
+    {
+      "name": "async.framework.tracing.xray.use-aws-plugin",
+      "type": "java.lang.Boolean",
+      "description": "Whether to use plugin for AWS service tracing",
+      "sourceType": "com.pravah.framework.async.tracing.TracingConfig$XRayConfig",
+      "defaultValue": true
+    },
+    {
+      "name": "async.framework.tracing.zipkin.base-url",
+      "type": "java.lang.String",
+      "description": "Zipkin base URL",
+      "sourceType": "com.pravah.framework.async.tracing.TracingConfig$ZipkinConfig",
+      "defaultValue": "http:\/\/localhost:9411"
+    },
+    {
+      "name": "async.framework.tracing.zipkin.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether Zipkin tracing is enabled",
+      "sourceType": "com.pravah.framework.async.tracing.TracingConfig$ZipkinConfig",
+      "defaultValue": false
+    }
+  ],
+  "hints": []
+}

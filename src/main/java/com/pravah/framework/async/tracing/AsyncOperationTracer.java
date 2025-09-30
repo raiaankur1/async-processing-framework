@@ -107,7 +107,7 @@ public class AsyncOperationTracer {
                 .tag(TAG_API_NAME, apiName)
                 .start();
         
-        try (Tracer.SpanInScope ws = tracer.withSpanInScope(span)) {
+        try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
             Instant startTime = Instant.now();
             
             try {
@@ -151,7 +151,7 @@ public class AsyncOperationTracer {
                 .tag(TAG_QUEUE_TYPE, queueType)
                 .start();
         
-        try (Tracer.SpanInScope ws = tracer.withSpanInScope(span)) {
+        try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
             Instant startTime = Instant.now();
             
             try {
@@ -197,7 +197,7 @@ public class AsyncOperationTracer {
                 .tag(TAG_PAYLOAD_SIZE, String.valueOf(payloadSize))
                 .start();
         
-        try (Tracer.SpanInScope ws = tracer.withSpanInScope(span)) {
+        try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
             Instant startTime = Instant.now();
             
             try {
@@ -316,7 +316,7 @@ public class AsyncOperationTracer {
                 .tag(TAG_REQUEST_ID, requestId)
                 .start();
         
-        try (Tracer.SpanInScope ws = tracer.withSpanInScope(span)) {
+        try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
             String correlationId = correlationIdManager.getCurrentCorrelationId();
             
             return supplier.get()

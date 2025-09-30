@@ -447,6 +447,117 @@ public class MicrometerMetricsCollector implements MetricsCollector {
     }
 
     @Override
+    public void recordRetrySuccess(String requestId, int attemptNumber) {
+        if (!enabled.get()) return;
+        
+        Counter.builder(METRIC_PREFIX + ".retry.success")
+            .tag("attempt", String.valueOf(attemptNumber))
+            .register(meterRegistry)
+            .increment();
+    }
+
+    @Override
+    public void recordRetryFailure(String requestId, int attemptNumber, com.pravah.framework.async.exception.ErrorCode errorCode) {
+        if (!enabled.get()) return;
+        
+        Counter.builder(METRIC_PREFIX + ".retry.failure")
+            .tag("attempt", String.valueOf(attemptNumber))
+            .tag("error.code", errorCode.getCode())
+            .register(meterRegistry)
+            .increment();
+    }
+
+    @Override
+    public void recordRetryExhausted(String requestId, int finalAttempt) {
+        if (!enabled.get()) return;
+        
+        Counter.builder(RETRY_EXHAUSTED)
+            .tag("final.attempt", String.valueOf(finalAttempt))
+            .register(meterRegistry)
+            .increment();
+    }
+
+    @Override
+    public void recordCircuitBreakerOpen(String circuitBreakerKey) {
+        if (!enabled.get()) return;
+        
+        Counter.builder(METRIC_PREFIX + ".circuit.breaker.open")
+            .tag("key", circuitBreakerKey)
+            .register(meterRegistry)
+            .increment();
+    }
+
+    @Override
+    public void recordCircuitBreakerSuccess(String circuitBreakerKey) {
+        if (!enabled.get()) return;
+        
+        Counter.builder(METRIC_PREFIX + ".circuit.breaker.success")
+            .tag("key", circuitBreakerKey)
+            .register(meterRegistry)
+            .increment();
+    }
+
+    @Override
+    public void recordCircuitBreakerFailure(String circuitBreakerKey) {
+        if (!enabled.get()) return;
+        
+        Counter.builder(METRIC_PREFIX + ".circuit.breaker.failure")
+            .tag("key", circuitBreakerKey)
+            .register(meterRegistry)
+            .increment();
+    }
+
+    @Override
+    public void recordCircuitBreakerStateChange(String circuitBreakerKey, com.pravah.framework.async.services.CircuitBreakerManager.CircuitBreakerState newState) {
+        if (!enabled.get()) return;
+        
+        Counter.builder(CIRCUIT_BREAKER_STATE)
+            .tag("key", circuitBreakerKey)
+            .tag("state", newState.name())
+            .register(meterRegistry)
+            .increment();
+    }
+
+    @Override
+    public void recordDeadLetterQueueSent(String requestId, String requestType) {
+        if (!enabled.get()) return;
+        
+        Counter.builder(METRIC_PREFIX + ".dead.letter.queue.sent")
+            .tag("request.type", requestType)
+            .register(meterRegistry)
+            .increment();
+    }
+
+    @Override
+    public void recordDeadLetterQueueError(String requestId, String errorType) {
+        if (!enabled.get()) return;
+        
+        Counter.builder(METRIC_PREFIX + ".dead.letter.queue.error")
+            .tag("error.type", errorType)
+            .register(meterRegistry)
+            .increment();
+    }
+
+    @Override
+    public void recordDeadLetterQueueReprocessed(String requestId) {
+        if (!enabled.get()) return;
+        
+        Counter.builder(METRIC_PREFIX + ".dead.letter.queue.reprocessed")
+            .register(meterRegistry)
+            .increment();
+    }
+
+    @Override
+    public void recordDeadLetterQueueReprocessError(String requestId, String errorType) {
+        if (!enabled.get()) return;
+        
+        Counter.builder(METRIC_PREFIX + ".dead.letter.queue.reprocess.error")
+            .tag("error.type", errorType)
+            .register(meterRegistry)
+            .increment();
+    }
+
+    @Override
     public MetricsSnapshot getMetricsSnapshot() {
         // Implementation would require collecting all current metric values
         // This is a simplified version
