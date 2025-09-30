@@ -599,6 +599,16 @@ public abstract class AsyncRequest {
         return status;
     }
 
+    /**
+     * Gets the overall status of the request.
+     * This is an alias for getStatus() for compatibility.
+     *
+     * @return the overall status
+     */
+    public AsyncRequestStatus getOverallStatus() {
+        return status;
+    }
+
     public AsyncRequest withStatus(AsyncRequestStatus status) {
         this.status = status;
         return this;
@@ -662,6 +672,13 @@ public abstract class AsyncRequest {
 
     public void setRetryCount(int retryCount) {
         this.retryCount = retryCount;
+    }
+
+    /**
+     * Increments the retry count by 1.
+     */
+    public void incrementRetryCount() {
+        this.retryCount++;
     }
 
     public int getMaxRetries() {

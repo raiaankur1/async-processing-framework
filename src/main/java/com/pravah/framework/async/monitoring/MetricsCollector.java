@@ -1,5 +1,6 @@
 package com.pravah.framework.async.monitoring;
 
+import com.pravah.framework.async.model.AsyncRequestQueueType;
 import com.pravah.framework.async.model.AsyncRequestStatus;
 import com.pravah.framework.async.model.AsyncRequestType;
 
@@ -41,6 +42,50 @@ public interface MetricsCollector {
      * Record that the service has been initialized.
      */
     void recordServiceInitialized();
+
+    /**
+     * Record that the listener has been initialized.
+     */
+    void recordListenerInitialized();
+
+    /**
+     * Record that a message has been received from a queue.
+     *
+     * @param queueType the queue type
+     */
+    void recordMessageReceived(AsyncRequestQueueType queueType);
+
+    /**
+     * Record that a message has been processed successfully.
+     *
+     * @param queueType the queue type
+     * @param processingTime the processing time
+     */
+    void recordMessageProcessed(AsyncRequestQueueType queueType, Duration processingTime);
+
+    /**
+     * Record that a message processing has failed.
+     *
+     * @param queueType the queue type
+     * @param errorType the error type
+     * @param processingTime the processing time
+     */
+    void recordMessageFailed(AsyncRequestQueueType queueType, String errorType, Duration processingTime);
+
+    /**
+     * Record that a message has been sent to dead letter queue.
+     *
+     * @param requestId the request ID
+     */
+    void recordDeadLetterMessage(String requestId);
+
+    /**
+     * Record that dead letter processing has failed.
+     *
+     * @param requestId the request ID
+     * @param errorType the error type
+     */
+    void recordDeadLetterProcessingFailed(String requestId, String errorType);
 
     /**
      * Record a status update operation.

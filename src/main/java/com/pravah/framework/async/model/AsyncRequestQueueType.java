@@ -55,6 +55,21 @@ public enum AsyncRequestQueueType {
      */
     DAILY(86400, "daily", "Process after 24 hours"),
 
+    /**
+     * Default priority queue
+     */
+    DEFAULT(0, "default", "Default priority queue"),
+
+    /**
+     * High priority queue
+     */
+    HIGH_PRIORITY(0, "high-priority", "High priority queue"),
+
+    /**
+     * Low priority queue
+     */
+    LOW_PRIORITY(0, "low-priority", "Low priority queue"),
+
     // Legacy queue types for backward compatibility
     /**
      * Legacy 3 minutes queue

@@ -1,1 +1,2 @@
 com.pravah.framework.async.config.AsyncFrameworkAutoConfiguration
+com.pravah.framework.async.config.SQSListenerAutoConfiguration
