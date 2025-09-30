@@ -67,6 +67,14 @@ public class AsyncFrameworkConfig {
     private StorageConfig storage = new StorageConfig();
 
     /**
+     * Processing configuration.
+     */
+    @NestedConfigurationProperty
+    @Valid
+    @NotNull
+    private ProcessingConfig processing = new ProcessingConfig();
+
+    /**
      * Default constructor.
      */
     public AsyncFrameworkConfig() {
@@ -132,6 +140,15 @@ public class AsyncFrameworkConfig {
         return this;
     }
 
+    public ProcessingConfig getProcessing() {
+        return processing;
+    }
+
+    public AsyncFrameworkConfig setProcessing(ProcessingConfig processing) {
+        this.processing = processing;
+        return this;
+    }
+
     /**
      * Validate the entire configuration.
      *
@@ -149,6 +166,9 @@ public class AsyncFrameworkConfig {
         }
         if (storage != null) {
             storage.validate();
+        }
+        if (processing != null) {
+            processing.validate();
         }
         if (queues != null) {
             queues.values().forEach(QueueConfig::validate);
@@ -436,6 +456,90 @@ public class AsyncFrameworkConfig {
             }
             if (payloadTtl == null || payloadTtl.isNegative()) {
                 throw new IllegalArgumentException("Payload TTL must be positive");
+            }
+        }
+    }
+
+    /**
+     * Processing configuration nested class.
+     */
+    public static class ProcessingConfig {
+        private int corePoolSize = 4;
+        private int maxPoolSize = 20;
+        private int queueCapacity = 100;
+        private Duration keepAliveTime = Duration.ofMinutes(1);
+        private boolean allowCoreThreadTimeOut = false;
+        private String threadNamePrefix = "async-processing-";
+
+        public int getCorePoolSize() {
+            return corePoolSize;
+        }
+
+        public ProcessingConfig setCorePoolSize(int corePoolSize) {
+            this.corePoolSize = corePoolSize;
+            return this;
+        }
+
+        public int getMaxPoolSize() {
+            return maxPoolSize;
+        }
+
+        public ProcessingConfig setMaxPoolSize(int maxPoolSize) {
+            this.maxPoolSize = maxPoolSize;
+            return this;
+        }
+
+        public int getQueueCapacity() {
+            return queueCapacity;
+        }
+
+        public ProcessingConfig setQueueCapacity(int queueCapacity) {
+            this.queueCapacity = queueCapacity;
+            return this;
+        }
+
+        public Duration getKeepAliveTime() {
+            return keepAliveTime;
+        }
+
+        public ProcessingConfig setKeepAliveTime(Duration keepAliveTime) {
+            this.keepAliveTime = keepAliveTime;
+            return this;
+        }
+
+        public boolean isAllowCoreThreadTimeOut() {
+            return allowCoreThreadTimeOut;
+        }
+
+        public ProcessingConfig setAllowCoreThreadTimeOut(boolean allowCoreThreadTimeOut) {
+            this.allowCoreThreadTimeOut = allowCoreThreadTimeOut;
+            return this;
+        }
+
+        public String getThreadNamePrefix() {
+            return threadNamePrefix;
+        }
+
+        public ProcessingConfig setThreadNamePrefix(String threadNamePrefix) {
+            this.threadNamePrefix = threadNamePrefix;
+            return this;
+        }
+
+        public void validate() {
+            if (corePoolSize < 0) {
+                throw new IllegalArgumentException("Core pool size cannot be negative");
+            }
+            if (maxPoolSize <= 0) {
+                throw new IllegalArgumentException("Max pool size must be positive");
+            }
+            if (corePoolSize > maxPoolSize) {
+                throw new IllegalArgumentException("Core pool size cannot exceed max pool size");
+            }
+            if (queueCapacity < 0) {
+                throw new IllegalArgumentException("Queue capacity cannot be negative");
+            }
+            if (keepAliveTime == null || keepAliveTime.isNegative()) {
+                throw new IllegalArgumentException("Keep alive time must be positive");
             }
         }
     }

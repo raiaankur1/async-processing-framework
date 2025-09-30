@@ -606,6 +606,12 @@ public class AsyncRequestBuilder {
     public AsyncRequestConfig getConfig() { return config; }
     public RetryPolicy getRetryPolicy() { return retryPolicy; }
     public Map<String, String> getCustomAttributes() { return new HashMap<>(customAttributes); }
+    
+    // Additional getters for testing and dependency access
+    public AsyncDAO getAsyncDAO() { return asyncDAO; }
+    public Map<AsyncRequestQueueType, Queue> getQueueMap() { return queues; }
+    public StorageClient getStorageClient() { return storageClient; }
+    public MetricsCollector getMetricsCollector() { return metricsCollector; }
 
     /**
      * Simple retry policy configuration class.

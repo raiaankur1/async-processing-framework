@@ -1,5 +1,6 @@
 package com.pravah.framework.async.monitoring;
 
+import com.pravah.framework.async.model.AsyncRequestStatus;
 import com.pravah.framework.async.model.AsyncRequestType;
 
 import java.time.Duration;
@@ -30,12 +31,38 @@ public interface MetricsCollector {
     void recordRequestQueued(AsyncRequestType requestType);
 
     /**
+     * Record that a request has been loaded from storage.
+     *
+     * @param requestType the type of request
+     */
+    void recordRequestLoaded(AsyncRequestType requestType);
+
+    /**
+     * Record that the service has been initialized.
+     */
+    void recordServiceInitialized();
+
+    /**
+     * Record a status update operation.
+     *
+     * @param status the new status
+     */
+    void recordStatusUpdate(AsyncRequestStatus status);
+
+    /**
      * Record that a request has completed successfully.
      *
      * @param requestType the type of request
      * @param processingTime the total processing time
      */
     void recordRequestCompleted(AsyncRequestType requestType, Duration processingTime);
+
+    /**
+     * Record that a request has completed successfully (without duration).
+     *
+     * @param requestType the type of request
+     */
+    void recordRequestCompleted(AsyncRequestType requestType);
 
     /**
      * Record that a request has failed.
