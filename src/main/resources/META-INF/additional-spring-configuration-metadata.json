@@ -3,14 +3,14 @@
     {
       "name": "async.framework.enabled",
       "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Enable or disable the async processing framework."
+      "description": "Whether the async processing framework is enabled.",
+      "defaultValue": true
     },
     {
       "name": "async.framework.aws.region",
       "type": "java.lang.String",
-      "defaultValue": "ap-south-1",
-      "description": "AWS region for all services."
+      "description": "AWS region to use for all services.",
+      "defaultValue": "ap-south-1"
     },
     {
       "name": "async.framework.aws.access-key",
@@ -30,456 +30,288 @@
     {
       "name": "async.framework.aws.use-default-credentials-provider",
       "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to use the default AWS credentials provider chain."
-    },
-    {
-      "name": "async.framework.aws.connection-timeout",
-      "type": "java.time.Duration",
-      "defaultValue": "PT30S",
-      "description": "Connection timeout for AWS service calls."
-    },
-    {
-      "name": "async.framework.aws.socket-timeout",
-      "type": "java.time.Duration",
-      "defaultValue": "PT2M",
-      "description": "Socket timeout for AWS service calls."
+      "description": "Whether to use the default AWS credentials provider chain.",
+      "defaultValue": true
     },
     {
       "name": "async.framework.aws.dynamodb.table-name",
       "type": "java.lang.String",
-      "defaultValue": "async_requests",
-      "description": "DynamoDB table name for storing async requests."
+      "description": "Primary table name for storing async requests.",
+      "defaultValue": "async_requests"
     },
     {
       "name": "async.framework.aws.dynamodb.billing-mode",
       "type": "com.pravah.framework.async.config.DynamoDBConfig$BillingMode",
-      "defaultValue": "PAY_PER_REQUEST",
-      "description": "DynamoDB billing mode (PROVISIONED or PAY_PER_REQUEST)."
-    },
-    {
-      "name": "async.framework.aws.dynamodb.read-capacity",
-      "type": "java.lang.Integer",
-      "defaultValue": 5,
-      "description": "Read capacity units for provisioned billing mode."
-    },
-    {
-      "name": "async.framework.aws.dynamodb.write-capacity",
-      "type": "java.lang.Integer",
-      "defaultValue": 5,
-      "description": "Write capacity units for provisioned billing mode."
+      "description": "Billing mode for the table (PAY_PER_REQUEST or PROVISIONED).",
+      "defaultValue": "PAY_PER_REQUEST"
     },
     {
       "name": "async.framework.aws.dynamodb.create-table-if-not-exists",
       "type": "java.lang.Boolean",
-      "defaultValue": false,
-      "description": "Whether to create the table automatically if it doesn't exist."
+      "description": "Whether to create the table automatically if it doesn't exist.",
+      "defaultValue": false
     },
     {
       "name": "async.framework.aws.dynamodb.enable-ttl",
       "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to enable TTL for automatic cleanup."
+      "description": "Whether to enable TTL for automatic cleanup.",
+      "defaultValue": true
     },
     {
       "name": "async.framework.aws.dynamodb.default-ttl",
       "type": "java.time.Duration",
-      "defaultValue": "P30D",
-      "description": "Default TTL duration for async requests."
+      "description": "Default TTL duration for async requests.",
+      "defaultValue": "P30D"
     },
     {
       "name": "async.framework.aws.sqs.visibility-timeout-seconds",
       "type": "java.lang.Integer",
-      "defaultValue": 300,
-      "description": "Default visibility timeout for messages in seconds."
+      "description": "Default visibility timeout for messages in seconds.",
+      "defaultValue": 300
     },
     {
       "name": "async.framework.aws.sqs.max-messages",
       "type": "java.lang.Integer",
-      "defaultValue": 10,
-      "description": "Maximum number of messages to receive in a single poll."
+      "description": "Maximum number of messages to receive in a single poll.",
+      "defaultValue": 10
     },
     {
       "name": "async.framework.aws.sqs.wait-time-seconds",
       "type": "java.lang.Integer",
-      "defaultValue": 20,
-      "description": "Wait time for long polling in seconds."
+      "description": "Wait time for long polling in seconds.",
+      "defaultValue": 20
     },
     {
       "name": "async.framework.aws.sqs.enable-long-polling",
       "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to enable long polling."
+      "description": "Whether to enable long polling.",
+      "defaultValue": true
     },
     {
       "name": "async.framework.aws.sqs.max-concurrent-processors",
       "type": "java.lang.Integer",
-      "defaultValue": 10,
-      "description": "Maximum number of concurrent message processors."
-    },
-    {
-      "name": "async.framework.aws.sqs.enable-batch-processing",
-      "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to enable batch message processing."
+      "description": "Maximum number of concurrent message processors.",
+      "defaultValue": 10
     },
     {
       "name": "async.framework.aws.s3.bucket-name",
       "type": "java.lang.String",
-      "defaultValue": "async-framework-payloads",
-      "description": "S3 bucket name for storing large payloads."
+      "description": "Primary S3 bucket name for storing payloads.",
+      "defaultValue": "async-framework-payloads"
     },
     {
       "name": "async.framework.aws.s3.key-prefix",
       "type": "java.lang.String",
-      "defaultValue": "async-requests/",
-      "description": "Key prefix for all objects stored in S3."
-    },
-    {
-      "name": "async.framework.aws.s3.storage-class",
-      "type": "com.pravah.framework.async.config.S3Config$StorageClass",
-      "defaultValue": "STANDARD",
-      "description": "S3 storage class for objects."
+      "description": "Key prefix for all objects stored in S3.",
+      "defaultValue": "async-requests/"
     },
     {
       "name": "async.framework.aws.s3.create-bucket-if-not-exists",
       "type": "java.lang.Boolean",
-      "defaultValue": false,
-      "description": "Whether to create the bucket automatically if it doesn't exist."
+      "description": "Whether to create the bucket automatically if it doesn't exist.",
+      "defaultValue": false
+    },
+    {
+      "name": "async.framework.aws.s3.storage-class",
+      "type": "com.pravah.framework.async.config.S3Config$StorageClass",
+      "description": "S3 storage class for objects.",
+      "defaultValue": "STANDARD"
     },
     {
       "name": "async.framework.aws.s3.encryption.enabled",
       "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to enable server-side encryption."
+      "description": "Whether to enable server-side encryption.",
+      "defaultValue": true
     },
     {
       "name": "async.framework.aws.s3.encryption.type",
       "type": "com.pravah.framework.async.config.S3Config$EncryptionConfig$EncryptionType",
-      "defaultValue": "SSE_S3",
-      "description": "Server-side encryption type (SSE_S3, SSE_KMS, SSE_C)."
+      "description": "Server-side encryption type.",
+      "defaultValue": "SSE_S3"
     },
     {
       "name": "async.framework.retry.max-attempts",
       "type": "java.lang.Integer",
-      "defaultValue": 3,
-      "description": "Maximum number of retry attempts for failed requests."
+      "description": "Maximum number of retry attempts.",
+      "defaultValue": 3
     },
     {
       "name": "async.framework.retry.initial-delay",
       "type": "java.time.Duration",
-      "defaultValue": "PT30S",
-      "description": "Initial delay before first retry attempt."
+      "description": "Initial retry delay.",
+      "defaultValue": "PT30S"
     },
     {
       "name": "async.framework.retry.max-delay",
       "type": "java.time.Duration",
-      "defaultValue": "PT10M",
-      "description": "Maximum delay between retry attempts."
+      "description": "Maximum retry delay.",
+      "defaultValue": "PT10M"
     },
     {
       "name": "async.framework.retry.backoff-multiplier",
       "type": "java.lang.Double",
-      "defaultValue": 2.0,
-      "description": "Backoff multiplier for exponential retry delay."
+      "description": "Backoff multiplier for exponential backoff.",
+      "defaultValue": 2.0
     },
     {
       "name": "async.framework.retry.enable-dead-letter-queue",
       "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to enable dead letter queue for failed requests."
+      "description": "Whether to enable dead letter queue support.",
+      "defaultValue": true
     },
     {
       "name": "async.framework.monitoring.enable-metrics",
       "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to enable metrics collection."
+      "description": "Whether to enable metrics collection.",
+      "defaultValue": true
     },
     {
       "name": "async.framework.monitoring.enable-tracing",
       "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to enable distributed tracing."
+      "description": "Whether to enable distributed tracing.",
+      "defaultValue": true
     },
     {
       "name": "async.framework.monitoring.enable-health-checks",
       "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to enable health checks."
+      "description": "Whether to enable health checks.",
+      "defaultValue": true
     },
     {
-      "name": "async.framework.monitoring.metrics-namespace",
-      "type": "java.lang.String",
-      "defaultValue": "AsyncFramework",
-      "description": "Namespace for metrics collection."
+      "name": "async.framework.monitoring.metrics-publish-interval",
+      "type": "java.time.Duration",
+      "description": "Metrics collection interval.",
+      "defaultValue": "PT1M"
     },
     {
       "name": "async.framework.storage.enable-external-storage",
       "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to enable external storage for large payloads."
+      "description": "Whether to enable external storage for large payloads.",
+      "defaultValue": true
     },
     {
       "name": "async.framework.storage.inline-payload-threshold",
       "type": "java.lang.Integer",
-      "defaultValue": 1024,
-      "description": "Threshold in bytes for storing payloads inline vs external storage."
+      "description": "Threshold in bytes for storing payloads inline vs externally.",
+      "defaultValue": 1024
     },
     {
       "name": "async.framework.storage.max-payload-size",
       "type": "java.lang.Integer",
-      "defaultValue": 10485760,
-      "description": "Maximum payload size in bytes (10MB default)."
+      "description": "Maximum payload size in bytes.",
+      "defaultValue": 10485760
     },
     {
-      "name": "async.framework.storage.compress-payloads",
-      "type": "java.lang.Boolean",
-      "defaultValue": false,
-      "description": "Whether to compress payloads before storage."
-    },
-    {
-      "name": "async.framework.monitoring.enabled",
-      "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether monitoring and metrics collection is enabled for the async framework."
-    },
-    {
-      "name": "async.framework.monitoring.collection-interval",
-      "type": "java.time.Duration",
-      "defaultValue": "30s",
-      "description": "Interval for collecting system and performance metrics."
-    },
-    {
-      "name": "async.framework.monitoring.jvm-metrics",
-      "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to collect JVM metrics (memory, threads, GC)."
-    },
-    {
-      "name": "async.framework.monitoring.system-metrics",
-      "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to collect system metrics (CPU, load average)."
-    },
-    {
-      "name": "async.framework.monitoring.business-metrics",
-      "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to collect business-specific metrics."
-    },
-    {
-      "name": "async.framework.monitoring.metric-prefix",
-      "type": "java.lang.String",
-      "defaultValue": "async.framework",
-      "description": "Prefix for all metrics generated by the async framework."
-    },
-    {
-      "name": "async.framework.monitoring.common-tags",
-      "type": "java.util.Map<java.lang.String,java.lang.String>",
-      "description": "Common tags to add to all metrics."
-    },
-    {
-      "name": "async.framework.monitoring.detailed-error-tracking",
-      "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to enable detailed error tracking and analysis."
-    },
-    {
-      "name": "async.framework.monitoring.performance-profiling",
-      "type": "java.lang.Boolean",
-      "defaultValue": false,
-      "description": "Whether to enable performance profiling and latency tracking."
-    },
-    {
-      "name": "async.framework.monitoring.cloudwatch.enabled",
-      "type": "java.lang.Boolean",
-      "defaultValue": false,
-      "description": "Whether CloudWatch metrics integration is enabled."
-    },
-    {
-      "name": "async.framework.monitoring.cloudwatch.namespace",
-      "type": "java.lang.String",
-      "defaultValue": "AsyncFramework",
-      "description": "CloudWatch namespace for metrics."
-    },
-    {
-      "name": "async.framework.monitoring.cloudwatch.step",
-      "type": "java.time.Duration",
-      "defaultValue": "1m",
-      "description": "Step interval for publishing metrics to CloudWatch."
-    },
-    {
-      "name": "async.framework.monitoring.cloudwatch.batch-size",
+      "name": "async.framework.processing.core-pool-size",
       "type": "java.lang.Integer",
-      "defaultValue": 20,
-      "description": "Batch size for publishing metrics to CloudWatch."
+      "description": "Core thread pool size for async processing.",
+      "defaultValue": 4
     },
     {
-      "name": "async.framework.monitoring.cloudwatch.common-dimensions",
-      "type": "java.util.Map<java.lang.String,java.lang.String>",
-      "description": "Common dimensions to add to all CloudWatch metrics."
-    },
-    {
-      "name": "async.framework.monitoring.cloudwatch.percentile-histogram",
-      "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to publish percentile histograms to CloudWatch."
-    },
-    {
-      "name": "async.framework.monitoring.cloudwatch.connect-timeout",
-      "type": "java.time.Duration",
-      "defaultValue": "10s",
-      "description": "Connection timeout for CloudWatch client."
-    },
-    {
-      "name": "async.framework.monitoring.cloudwatch.read-timeout",
-      "type": "java.time.Duration",
-      "defaultValue": "30s",
-      "description": "Read timeout for CloudWatch client."
-    },
-    {
-      "name": "async.framework.monitoring.cloudwatch.custom-dashboards.enabled",
-      "type": "java.lang.Boolean",
-      "defaultValue": false,
-      "description": "Whether to automatically create CloudWatch dashboards."
-    },
-    {
-      "name": "async.framework.monitoring.system-metrics-collector.enabled",
-      "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether the system metrics collector is enabled."
-    },
-    {
-      "name": "async.framework.monitoring.performance-monitor.enabled",
-      "type": "java.lang.Boolean",
-      "defaultValue": false,
-      "description": "Whether the performance monitor is enabled."
-    },
-    {
-      "name": "async.framework.monitoring.error-tracker.enabled",
-      "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether the error tracker is enabled."
-    },
-    {
-      "name": "async.framework.tracing.enabled",
-      "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether distributed tracing is enabled for the async framework."
-    },
-    {
-      "name": "async.framework.tracing.service-name",
-      "type": "java.lang.String",
-      "defaultValue": "async-processing-framework",
-      "description": "Service name for tracing spans."
-    },
-    {
-      "name": "async.framework.tracing.xray.enabled",
-      "type": "java.lang.Boolean",
-      "defaultValue": false,
-      "description": "Whether AWS X-Ray tracing is enabled."
-    },
-    {
-      "name": "async.framework.tracing.xray.region",
-      "type": "java.lang.String",
-      "description": "AWS region for X-Ray service."
-    },
-    {
-      "name": "async.framework.tracing.xray.daemon-address",
-      "type": "java.lang.String",
-      "defaultValue": "127.0.0.1:2000",
-      "description": "Address of the X-Ray daemon."
-    },
-    {
-      "name": "async.framework.tracing.xray.use-aws-plugin",
-      "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to use AWS plugins for service detection."
-    },
-    {
-      "name": "async.framework.tracing.zipkin.enabled",
-      "type": "java.lang.Boolean",
-      "defaultValue": false,
-      "description": "Whether Zipkin tracing is enabled."
-    },
-    {
-      "name": "async.framework.tracing.zipkin.base-url",
-      "type": "java.lang.String",
-      "defaultValue": "http://localhost:9411",
-      "description": "Base URL for Zipkin server."
-    },
-    {
-      "name": "async.framework.tracing.sampling.probability",
-      "type": "java.lang.Float",
-      "defaultValue": 0.1,
-      "description": "Sampling probability for traces (0.0 to 1.0)."
-    },
-    {
-      "name": "async.framework.tracing.sampling.rate-limit",
+      "name": "async.framework.processing.max-pool-size",
       "type": "java.lang.Integer",
-      "defaultValue": 100,
-      "description": "Rate limit for traces per second."
+      "description": "Maximum thread pool size for async processing.",
+      "defaultValue": 20
+    },
+    {
+      "name": "async.framework.processing.queue-capacity",
+      "type": "java.lang.Integer",
+      "description": "Queue capacity for thread pool.",
+      "defaultValue": 100
+    },
+    {
+      "name": "async.framework.listener.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the SQS listener is enabled.",
+      "defaultValue": true
+    },
+    {
+      "name": "async.framework.listener.max-concurrent-consumers",
+      "type": "java.lang.Integer",
+      "description": "Maximum number of concurrent consumers per queue.",
+      "defaultValue": 10
+    },
+    {
+      "name": "async.framework.listener.max-messages-per-poll",
+      "type": "java.lang.Integer",
+      "description": "Maximum number of messages to receive in a single poll.",
+      "defaultValue": 10
     }
   ],
   "hints": [
     {
-      "name": "async.framework.monitoring.metrics-namespace",
-      "type": "java.lang.String",
-      "defaultValue": "AsyncFramework",
-      "description": "Namespace for metrics collection."
-    },
-    {
-      "name": "async.framework.storage.enable-external-storage",
-      "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "description": "Whether to enable external storage for large payloads."
-    },
-    {
-      "name": "async.framework.storage.inline-payload-threshold",
-      "type": "java.lang.Integer",
-      "defaultValue": 1024,
-      "description": "Threshold in bytes for storing payloads inline vs external storage."
-    },
-    {
-      "name": "async.framework.storage.max-payload-size",
-      "type": "java.lang.Integer",
-      "defaultValue": 10485760,
-      "description": "Maximum payload size in bytes (10MB default)."
-    },
-    {
-      "name": "async.framework.storage.compress-payloads",
-      "type": "java.lang.Boolean",
-      "defaultValue": false,
-      "description": "Whether to compress payloads before storage."
-
-    },
-    {
-      "name": "async.framework.monitoring.collection-interval",
+      "name": "async.framework.aws.region",
       "values": [
         {
-          "value": "10s",
-          "description": "Collect metrics every 10 seconds (high frequency)."
+          "value": "us-east-1",
+          "description": "US East (N. Virginia)"
         },
         {
-          "value": "30s",
-          "description": "Collect metrics every 30 seconds (default)."
+          "value": "us-west-2",
+          "description": "US West (Oregon)"
         },
         {
-          "value": "1m",
-          "description": "Collect metrics every minute (low frequency)."
+          "value": "eu-west-1",
+          "description": "Europe (Ireland)"
+        },
+        {
+          "value": "ap-south-1",
+          "description": "Asia Pacific (Mumbai)"
+        },
+        {
+          "value": "ap-southeast-1",
+          "description": "Asia Pacific (Singapore)"
         }
       ]
     },
     {
-      "name": "async.framework.monitoring.cloudwatch.namespace",
+      "name": "async.framework.aws.dynamodb.billing-mode",
       "values": [
         {
-          "value": "AsyncFramework",
-          "description": "Default namespace for async framework metrics."
+          "value": "PROVISIONED",
+          "description": "Provisioned capacity mode with specified read/write capacity units"
         },
         {
-          "value": "MyApp/AsyncFramework",
-          "description": "Application-specific namespace."
+          "value": "PAY_PER_REQUEST",
+          "description": "On-demand billing mode that scales automatically"
+        }
+      ]
+    },
+    {
+      "name": "async.framework.aws.s3.storage-class",
+      "values": [
+        {
+          "value": "STANDARD",
+          "description": "Standard storage class for frequently accessed data"
+        },
+        {
+          "value": "STANDARD_IA",
+          "description": "Standard-Infrequent Access for less frequently accessed data"
+        },
+        {
+          "value": "INTELLIGENT_TIERING",
+          "description": "Automatically moves data between access tiers"
+        },
+        {
+          "value": "GLACIER",
+          "description": "Archive storage for long-term backup"
+        }
+      ]
+    },
+    {
+      "name": "async.framework.aws.s3.encryption.type",
+      "values": [
+        {
+          "value": "SSE_S3",
+          "description": "Server-side encryption with Amazon S3-managed keys"
+        },
+        {
+          "value": "SSE_KMS",
+          "description": "Server-side encryption with AWS KMS-managed keys"
+        },
+        {
+          "value": "SSE_C",
+          "description": "Server-side encryption with customer-provided keys"
         }
       ]
     }
