@@ -151,7 +151,6 @@ public class CloudWatchMetricsConfiguration {
     }
 
     @Bean
-    @ConfigurationProperties(prefix = "async.framework.monitoring.cloudwatch")
     public CloudWatchMetricsProperties cloudWatchMetricsProperties() {
         return new CloudWatchMetricsProperties();
     }

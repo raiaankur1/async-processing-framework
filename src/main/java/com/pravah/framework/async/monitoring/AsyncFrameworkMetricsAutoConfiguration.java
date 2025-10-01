@@ -168,7 +168,6 @@ public class AsyncFrameworkMetricsAutoConfiguration {
     }
 
     @Bean
-    @ConfigurationProperties(prefix = "async.framework.monitoring")
     public MonitoringProperties monitoringProperties() {
         return new MonitoringProperties();
     }

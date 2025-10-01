@@ -3,239 +3,605 @@
     {
       "name": "async.framework.enabled",
       "type": "java.lang.Boolean",
-      "description": "Whether the async processing framework is enabled.",
+      "description": "Whether the async processing framework is enabled. When disabled, no async processing components will be initialized.",
       "defaultValue": true
     },
     {
       "name": "async.framework.aws.region",
       "type": "java.lang.String",
-      "description": "AWS region to use for all services.",
+      "description": "AWS region to use for all services (DynamoDB, SQS, S3). Must be a valid AWS region identifier.",
       "defaultValue": "ap-south-1"
     },
     {
       "name": "async.framework.aws.access-key",
       "type": "java.lang.String",
-      "description": "AWS access key ID (optional if using IAM roles)."
+      "description": "AWS access key ID for authentication. Optional if using IAM roles or default credential provider chain."
     },
     {
       "name": "async.framework.aws.secret-key",
       "type": "java.lang.String",
-      "description": "AWS secret access key (optional if using IAM roles)."
+      "description": "AWS secret access key for authentication. Required if access-key is provided."
     },
     {
       "name": "async.framework.aws.role-arn",
       "type": "java.lang.String",
-      "description": "AWS IAM role ARN to assume (optional)."
+      "description": "AWS IAM role ARN to assume for cross-account access or enhanced security. Format: arn:aws:iam::account:role/role-name"
+    },
+    {
+      "name": "async.framework.aws.external-id",
+      "type": "java.lang.String",
+      "description": "External ID for role assumption, used for enhanced security when assuming cross-account roles."
+    },
+    {
+      "name": "async.framework.aws.session-name",
+      "type": "java.lang.String",
+      "description": "Session name for role assumption, used for auditing and tracking purposes.",
+      "defaultValue": "AsyncFrameworkSession"
     },
     {
       "name": "async.framework.aws.use-default-credentials-provider",
       "type": "java.lang.Boolean",
-      "description": "Whether to use the default AWS credentials provider chain.",
+      "description": "Whether to use the default AWS credentials provider chain (environment variables, system properties, instance profile, etc.).",
       "defaultValue": true
+    },
+    {
+      "name": "async.framework.aws.connection-timeout",
+      "type": "java.time.Duration",
+      "description": "Connection timeout for AWS service calls. Format: PT30S for 30 seconds.",
+      "defaultValue": "PT30S"
+    },
+    {
+      "name": "async.framework.aws.socket-timeout",
+      "type": "java.time.Duration",
+      "description": "Socket timeout for AWS service calls. Format: PT2M for 2 minutes.",
+      "defaultValue": "PT2M"
+    },
+    {
+      "name": "async.framework.aws.max-retry-attempts",
+      "type": "java.lang.Integer",
+      "description": "Maximum number of retry attempts for AWS service calls.",
+      "defaultValue": 3
+    },
+    {
+      "name": "async.framework.aws.use-path-style-access",
+      "type": "java.lang.Boolean",
+      "description": "Whether to use path-style access for S3. Useful for LocalStack or custom S3-compatible services.",
+      "defaultValue": false
+    },
+    {
+      "name": "async.framework.aws.endpoint-url",
+      "type": "java.lang.String",
+      "description": "Custom endpoint URL for AWS services. Useful for LocalStack development or custom AWS endpoints."
     },
     {
       "name": "async.framework.aws.dynamodb.table-name",
       "type": "java.lang.String",
-      "description": "Primary table name for storing async requests.",
+      "description": "Primary DynamoDB table name for storing async request metadata and status.",
       "defaultValue": "async_requests"
+    },
+    {
+      "name": "async.framework.aws.dynamodb.read-capacity",
+      "type": "java.lang.Integer",
+      "description": "Read capacity units for the DynamoDB table (used only with PROVISIONED billing mode).",
+      "defaultValue": 5
+    },
+    {
+      "name": "async.framework.aws.dynamodb.write-capacity",
+      "type": "java.lang.Integer",
+      "description": "Write capacity units for the DynamoDB table (used only with PROVISIONED billing mode).",
+      "defaultValue": 5
     },
     {
       "name": "async.framework.aws.dynamodb.billing-mode",
       "type": "com.pravah.framework.async.config.DynamoDBConfig$BillingMode",
-      "description": "Billing mode for the table (PAY_PER_REQUEST or PROVISIONED).",
+      "description": "DynamoDB billing mode. PAY_PER_REQUEST scales automatically, PROVISIONED uses fixed capacity.",
       "defaultValue": "PAY_PER_REQUEST"
     },
     {
       "name": "async.framework.aws.dynamodb.create-table-if-not-exists",
       "type": "java.lang.Boolean",
-      "description": "Whether to create the table automatically if it doesn't exist.",
+      "description": "Whether to automatically create the DynamoDB table if it doesn't exist. Use with caution in production.",
       "defaultValue": false
+    },
+    {
+      "name": "async.framework.aws.dynamodb.enable-point-in-time-recovery",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable point-in-time recovery for the DynamoDB table.",
+      "defaultValue": true
+    },
+    {
+      "name": "async.framework.aws.dynamodb.enable-encryption",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable server-side encryption for the DynamoDB table.",
+      "defaultValue": true
+    },
+    {
+      "name": "async.framework.aws.dynamodb.kms-key-id",
+      "type": "java.lang.String",
+      "description": "KMS key ID for DynamoDB encryption. If not specified, AWS managed key is used."
+    },
+    {
+      "name": "async.framework.aws.dynamodb.ttl-attribute-name",
+      "type": "java.lang.String",
+      "description": "Attribute name for TTL (Time To Live) in DynamoDB table.",
+      "defaultValue": "ttl"
     },
     {
       "name": "async.framework.aws.dynamodb.enable-ttl",
       "type": "java.lang.Boolean",
-      "description": "Whether to enable TTL for automatic cleanup.",
+      "description": "Whether to enable TTL for automatic cleanup of expired async requests.",
       "defaultValue": true
     },
     {
       "name": "async.framework.aws.dynamodb.default-ttl",
       "type": "java.time.Duration",
-      "description": "Default TTL duration for async requests.",
+      "description": "Default TTL duration for async requests. Format: P30D for 30 days.",
       "defaultValue": "P30D"
+    },
+    {
+      "name": "async.framework.aws.dynamodb.connection-pool-size",
+      "type": "java.lang.Integer",
+      "description": "Connection pool size for DynamoDB client.",
+      "defaultValue": 50
+    },
+    {
+      "name": "async.framework.aws.dynamodb.max-connections-per-endpoint",
+      "type": "java.lang.Integer",
+      "description": "Maximum number of connections per DynamoDB endpoint.",
+      "defaultValue": 50
+    },
+    {
+      "name": "async.framework.aws.dynamodb.connection-timeout",
+      "type": "java.time.Duration",
+      "description": "Connection timeout for DynamoDB operations. Format: PT10S for 10 seconds.",
+      "defaultValue": "PT10S"
+    },
+    {
+      "name": "async.framework.aws.dynamodb.socket-timeout",
+      "type": "java.time.Duration",
+      "description": "Socket timeout for DynamoDB operations. Format: PT30S for 30 seconds.",
+      "defaultValue": "PT30S"
+    },
+    {
+      "name": "async.framework.aws.dynamodb.request-timeout",
+      "type": "java.time.Duration",
+      "description": "Request timeout for DynamoDB operations. Format: PT2M for 2 minutes.",
+      "defaultValue": "PT2M"
+    },
+    {
+      "name": "async.framework.aws.dynamodb.consistent-reads",
+      "type": "java.lang.Boolean",
+      "description": "Whether to use strongly consistent reads by default for DynamoDB operations.",
+      "defaultValue": false
+    },
+    {
+      "name": "async.framework.aws.sqs.queue-urls",
+      "type": "java.util.Map<java.lang.String,java.lang.String>",
+      "description": "Map of queue names to their SQS URLs. Example: {\"default\": \"https://sqs.region.amazonaws.com/account/queue-name\"}"
     },
     {
       "name": "async.framework.aws.sqs.visibility-timeout-seconds",
       "type": "java.lang.Integer",
-      "description": "Default visibility timeout for messages in seconds.",
+      "description": "Default visibility timeout for SQS messages in seconds (0-43200). Time a message is hidden after being received.",
       "defaultValue": 300
+    },
+    {
+      "name": "async.framework.aws.sqs.message-retention-period",
+      "type": "java.lang.Integer",
+      "description": "Message retention period in seconds (60-1209600). How long messages are kept in the queue.",
+      "defaultValue": 1209600
+    },
+    {
+      "name": "async.framework.aws.sqs.max-receive-count",
+      "type": "java.lang.Integer",
+      "description": "Maximum number of times a message can be received before being sent to dead letter queue (1-1000).",
+      "defaultValue": 3
     },
     {
       "name": "async.framework.aws.sqs.max-messages",
       "type": "java.lang.Integer",
-      "description": "Maximum number of messages to receive in a single poll.",
+      "description": "Maximum number of messages to receive in a single SQS poll (1-10).",
       "defaultValue": 10
     },
     {
       "name": "async.framework.aws.sqs.wait-time-seconds",
       "type": "java.lang.Integer",
-      "description": "Wait time for long polling in seconds.",
+      "description": "Wait time for SQS long polling in seconds (0-20). 0 disables long polling.",
       "defaultValue": 20
+    },
+    {
+      "name": "async.framework.aws.sqs.delay-seconds",
+      "type": "java.lang.Integer",
+      "description": "Delay before processing SQS messages in seconds (0-900).",
+      "defaultValue": 0
     },
     {
       "name": "async.framework.aws.sqs.enable-long-polling",
       "type": "java.lang.Boolean",
-      "description": "Whether to enable long polling.",
+      "description": "Whether to enable SQS long polling for reduced costs and improved performance.",
       "defaultValue": true
+    },
+    {
+      "name": "async.framework.aws.sqs.enable-deduplication",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable message deduplication for FIFO queues.",
+      "defaultValue": false
+    },
+    {
+      "name": "async.framework.aws.sqs.enable-content-based-deduplication",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable content-based deduplication for FIFO queues.",
+      "defaultValue": false
+    },
+    {
+      "name": "async.framework.aws.sqs.polling-interval",
+      "type": "java.time.Duration",
+      "description": "Polling interval when long polling is disabled. Format: PT5S for 5 seconds.",
+      "defaultValue": "PT5S"
     },
     {
       "name": "async.framework.aws.sqs.max-concurrent-processors",
       "type": "java.lang.Integer",
-      "description": "Maximum number of concurrent message processors.",
+      "description": "Maximum number of concurrent SQS message processors.",
       "defaultValue": 10
+    },
+    {
+      "name": "async.framework.aws.sqs.processing-thread-pool-size",
+      "type": "java.lang.Integer",
+      "description": "Thread pool size for SQS message processing.",
+      "defaultValue": 20
+    },
+    {
+      "name": "async.framework.aws.sqs.processing-timeout",
+      "type": "java.time.Duration",
+      "description": "Timeout for SQS message processing. Format: PT5M for 5 minutes.",
+      "defaultValue": "PT5M"
+    },
+    {
+      "name": "async.framework.aws.sqs.delete-on-success",
+      "type": "java.lang.Boolean",
+      "description": "Whether to delete SQS messages immediately after successful processing.",
+      "defaultValue": true
+    },
+    {
+      "name": "async.framework.aws.sqs.enable-batch-processing",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable batch processing of SQS messages for improved throughput.",
+      "defaultValue": true
+    },
+    {
+      "name": "async.framework.aws.sqs.batch-size",
+      "type": "java.lang.Integer",
+      "description": "Batch size for SQS batch operations (1-10).",
+      "defaultValue": 10
+    },
+    {
+      "name": "async.framework.aws.sqs.dead-letter-queue.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable dead letter queue support for failed messages.",
+      "defaultValue": true
+    },
+    {
+      "name": "async.framework.aws.sqs.dead-letter-queue.queue-url",
+      "type": "java.lang.String",
+      "description": "SQS URL for the dead letter queue. Required if dead letter queue is enabled."
+    },
+    {
+      "name": "async.framework.aws.sqs.dead-letter-queue.max-receive-count",
+      "type": "java.lang.Integer",
+      "description": "Maximum receive count for dead letter queue messages.",
+      "defaultValue": 3
+    },
+    {
+      "name": "async.framework.aws.sqs.dead-letter-queue.message-retention-period",
+      "type": "java.time.Duration",
+      "description": "Message retention period for dead letter queue. Format: P14D for 14 days.",
+      "defaultValue": "P14D"
     },
     {
       "name": "async.framework.aws.s3.bucket-name",
       "type": "java.lang.String",
-      "description": "Primary S3 bucket name for storing payloads.",
+      "description": "Primary S3 bucket name for storing large async request payloads. Must follow AWS S3 naming conventions.",
       "defaultValue": "async-framework-payloads"
     },
     {
       "name": "async.framework.aws.s3.key-prefix",
       "type": "java.lang.String",
-      "description": "Key prefix for all objects stored in S3.",
+      "description": "Key prefix for all objects stored in S3. Used for organizing and namespacing objects.",
       "defaultValue": "async-requests/"
     },
     {
       "name": "async.framework.aws.s3.create-bucket-if-not-exists",
       "type": "java.lang.Boolean",
-      "description": "Whether to create the bucket automatically if it doesn't exist.",
+      "description": "Whether to automatically create the S3 bucket if it doesn't exist. Use with caution in production.",
       "defaultValue": false
     },
     {
       "name": "async.framework.aws.s3.storage-class",
       "type": "com.pravah.framework.async.config.S3Config$StorageClass",
-      "description": "S3 storage class for objects.",
+      "description": "S3 storage class for objects. Affects cost and access patterns.",
       "defaultValue": "STANDARD"
+    },
+    {
+      "name": "async.framework.aws.s3.enable-transfer-acceleration",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable S3 Transfer Acceleration for faster uploads from distant locations.",
+      "defaultValue": false
+    },
+    {
+      "name": "async.framework.aws.s3.enable-versioning",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable S3 object versioning for the bucket.",
+      "defaultValue": false
+    },
+    {
+      "name": "async.framework.aws.s3.block-public-access",
+      "type": "java.lang.Boolean",
+      "description": "Whether to block public access to the S3 bucket for security.",
+      "defaultValue": true
+    },
+    {
+      "name": "async.framework.aws.s3.connection-timeout",
+      "type": "java.time.Duration",
+      "description": "Connection timeout for S3 operations. Format: PT30S for 30 seconds.",
+      "defaultValue": "PT30S"
+    },
+    {
+      "name": "async.framework.aws.s3.socket-timeout",
+      "type": "java.time.Duration",
+      "description": "Socket timeout for S3 operations. Format: PT2M for 2 minutes.",
+      "defaultValue": "PT2M"
+    },
+    {
+      "name": "async.framework.aws.s3.request-timeout",
+      "type": "java.time.Duration",
+      "description": "Request timeout for S3 operations. Format: PT5M for 5 minutes.",
+      "defaultValue": "PT5M"
+    },
+    {
+      "name": "async.framework.aws.s3.max-connections",
+      "type": "java.lang.Integer",
+      "description": "Maximum number of connections in the S3 client connection pool.",
+      "defaultValue": 50
+    },
+    {
+      "name": "async.framework.aws.s3.use-path-style-access",
+      "type": "java.lang.Boolean",
+      "description": "Whether to use path-style access for S3. Required for LocalStack and some S3-compatible services.",
+      "defaultValue": false
+    },
+    {
+      "name": "async.framework.aws.s3.endpoint-url",
+      "type": "java.lang.String",
+      "description": "Custom S3 endpoint URL. Useful for LocalStack development or S3-compatible services."
+    },
+    {
+      "name": "async.framework.aws.s3.default-metadata",
+      "type": "java.util.Map<java.lang.String,java.lang.String>",
+      "description": "Default metadata to be added to all S3 objects. Example: {\"CreatedBy\": \"AsyncFramework\"}"
+    },
+    {
+      "name": "async.framework.aws.s3.default-tags",
+      "type": "java.util.Map<java.lang.String,java.lang.String>",
+      "description": "Default tags to be added to all S3 objects. Example: {\"Service\": \"AsyncFramework\"}"
     },
     {
       "name": "async.framework.aws.s3.encryption.enabled",
       "type": "java.lang.Boolean",
-      "description": "Whether to enable server-side encryption.",
+      "description": "Whether to enable server-side encryption for S3 objects.",
       "defaultValue": true
     },
     {
       "name": "async.framework.aws.s3.encryption.type",
       "type": "com.pravah.framework.async.config.S3Config$EncryptionConfig$EncryptionType",
-      "description": "Server-side encryption type.",
+      "description": "Server-side encryption type for S3 objects.",
       "defaultValue": "SSE_S3"
+    },
+    {
+      "name": "async.framework.aws.s3.encryption.kms-key-id",
+      "type": "java.lang.String",
+      "description": "KMS key ID for SSE-KMS encryption. Required if encryption type is SSE_KMS."
+    },
+    {
+      "name": "async.framework.aws.s3.encryption.kms-key-arn",
+      "type": "java.lang.String",
+      "description": "KMS key ARN for SSE-KMS encryption. Alternative to kms-key-id."
+    },
+    {
+      "name": "async.framework.aws.s3.lifecycle-policy.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable S3 lifecycle policies for automatic object management.",
+      "defaultValue": true
+    },
+    {
+      "name": "async.framework.aws.s3.lifecycle-policy.transition-to-ia",
+      "type": "java.time.Duration",
+      "description": "Duration after which objects transition to Infrequent Access storage. Format: P30D for 30 days.",
+      "defaultValue": "P30D"
+    },
+    {
+      "name": "async.framework.aws.s3.lifecycle-policy.transition-to-glacier",
+      "type": "java.time.Duration",
+      "description": "Duration after which objects transition to Glacier storage. Format: P90D for 90 days.",
+      "defaultValue": "P90D"
+    },
+    {
+      "name": "async.framework.aws.s3.lifecycle-policy.transition-to-deep-archive",
+      "type": "java.time.Duration",
+      "description": "Duration after which objects transition to Deep Archive storage. Format: P180D for 180 days.",
+      "defaultValue": "P180D"
+    },
+    {
+      "name": "async.framework.aws.s3.lifecycle-policy.expiration",
+      "type": "java.time.Duration",
+      "description": "Duration after which objects are automatically deleted. Format: P365D for 365 days.",
+      "defaultValue": "P365D"
+    },
+    {
+      "name": "async.framework.aws.s3.lifecycle-policy.abort-incomplete-multipart-upload",
+      "type": "java.time.Duration",
+      "description": "Duration after which incomplete multipart uploads are aborted. Format: P7D for 7 days.",
+      "defaultValue": "P7D"
+    },
+    {
+      "name": "async.framework.aws.s3.multipart-upload.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable multipart uploads for large S3 objects.",
+      "defaultValue": true
+    },
+    {
+      "name": "async.framework.aws.s3.multipart-upload.threshold-bytes",
+      "type": "java.lang.Long",
+      "description": "Threshold in bytes above which multipart upload is used. Minimum 5MB.",
+      "defaultValue": 5242880
+    },
+    {
+      "name": "async.framework.aws.s3.multipart-upload.part-size-bytes",
+      "type": "java.lang.Long",
+      "description": "Part size in bytes for multipart uploads. Minimum 5MB.",
+      "defaultValue": 5242880
+    },
+    {
+      "name": "async.framework.aws.s3.multipart-upload.max-concurrent-parts",
+      "type": "java.lang.Integer",
+      "description": "Maximum number of concurrent parts for multipart uploads.",
+      "defaultValue": 10
     },
     {
       "name": "async.framework.retry.max-attempts",
       "type": "java.lang.Integer",
-      "description": "Maximum number of retry attempts.",
+      "description": "Maximum number of retry attempts for failed async operations.",
       "defaultValue": 3
     },
     {
       "name": "async.framework.retry.initial-delay",
       "type": "java.time.Duration",
-      "description": "Initial retry delay.",
+      "description": "Initial delay before first retry attempt. Format: PT30S for 30 seconds.",
       "defaultValue": "PT30S"
     },
     {
       "name": "async.framework.retry.max-delay",
       "type": "java.time.Duration",
-      "description": "Maximum retry delay.",
+      "description": "Maximum delay between retry attempts. Format: PT10M for 10 minutes.",
       "defaultValue": "PT10M"
     },
     {
       "name": "async.framework.retry.backoff-multiplier",
       "type": "java.lang.Double",
-      "description": "Backoff multiplier for exponential backoff.",
+      "description": "Multiplier for exponential backoff between retry attempts. Must be > 1.0.",
       "defaultValue": 2.0
     },
     {
       "name": "async.framework.retry.enable-dead-letter-queue",
       "type": "java.lang.Boolean",
-      "description": "Whether to enable dead letter queue support.",
+      "description": "Whether to send failed requests to dead letter queue after retry exhaustion.",
       "defaultValue": true
+    },
+    {
+      "name": "async.framework.retry.dead-letter-queue-url",
+      "type": "java.lang.String",
+      "description": "SQS URL for the dead letter queue. Required if dead letter queue is enabled."
     },
     {
       "name": "async.framework.monitoring.enable-metrics",
       "type": "java.lang.Boolean",
-      "description": "Whether to enable metrics collection.",
+      "description": "Whether to enable metrics collection using Micrometer and CloudWatch.",
       "defaultValue": true
     },
     {
       "name": "async.framework.monitoring.enable-tracing",
       "type": "java.lang.Boolean",
-      "description": "Whether to enable distributed tracing.",
+      "description": "Whether to enable distributed tracing using Spring Cloud Sleuth and AWS X-Ray.",
       "defaultValue": true
     },
     {
       "name": "async.framework.monitoring.enable-health-checks",
       "type": "java.lang.Boolean",
-      "description": "Whether to enable health checks.",
+      "description": "Whether to enable health checks for AWS services and framework components.",
       "defaultValue": true
     },
     {
       "name": "async.framework.monitoring.metrics-publish-interval",
       "type": "java.time.Duration",
-      "description": "Metrics collection interval.",
+      "description": "Interval for publishing metrics to CloudWatch. Format: PT1M for 1 minute.",
       "defaultValue": "PT1M"
+    },
+    {
+      "name": "async.framework.monitoring.metrics-namespace",
+      "type": "java.lang.String",
+      "description": "CloudWatch metrics namespace for framework metrics.",
+      "defaultValue": "AsyncFramework"
+    },
+    {
+      "name": "async.framework.queues",
+      "type": "java.util.Map<java.lang.String,com.pravah.framework.async.config.AsyncFrameworkConfig$QueueConfig>",
+      "description": "Map of queue configurations by queue name. Each queue can have different priority and concurrency settings."
     },
     {
       "name": "async.framework.storage.enable-external-storage",
       "type": "java.lang.Boolean",
-      "description": "Whether to enable external storage for large payloads.",
+      "description": "Whether to enable external S3 storage for large payloads that exceed the inline threshold.",
       "defaultValue": true
     },
     {
       "name": "async.framework.storage.inline-payload-threshold",
       "type": "java.lang.Integer",
-      "description": "Threshold in bytes for storing payloads inline vs externally.",
+      "description": "Threshold in bytes for storing payloads inline in DynamoDB vs externally in S3.",
       "defaultValue": 1024
     },
     {
       "name": "async.framework.storage.max-payload-size",
       "type": "java.lang.Integer",
-      "description": "Maximum payload size in bytes.",
+      "description": "Maximum payload size in bytes. Payloads exceeding this size will be rejected.",
       "defaultValue": 10485760
+    },
+    {
+      "name": "async.framework.storage.compress-payloads",
+      "type": "java.lang.Boolean",
+      "description": "Whether to compress payloads before storing them externally in S3.",
+      "defaultValue": false
+    },
+    {
+      "name": "async.framework.storage.payload-ttl",
+      "type": "java.time.Duration",
+      "description": "TTL for external payloads stored in S3. Format: P30D for 30 days.",
+      "defaultValue": "P30D"
     },
     {
       "name": "async.framework.processing.core-pool-size",
       "type": "java.lang.Integer",
-      "description": "Core thread pool size for async processing.",
+      "description": "Core thread pool size for async request processing.",
       "defaultValue": 4
     },
     {
       "name": "async.framework.processing.max-pool-size",
       "type": "java.lang.Integer",
-      "description": "Maximum thread pool size for async processing.",
+      "description": "Maximum thread pool size for async request processing.",
       "defaultValue": 20
     },
     {
       "name": "async.framework.processing.queue-capacity",
       "type": "java.lang.Integer",
-      "description": "Queue capacity for thread pool.",
+      "description": "Queue capacity for the async processing thread pool.",
       "defaultValue": 100
     },
     {
-      "name": "async.framework.listener.enabled",
+      "name": "async.framework.processing.keep-alive-time",
+      "type": "java.time.Duration",
+      "description": "Keep-alive time for idle threads in the processing pool. Format: PT1M for 1 minute.",
+      "defaultValue": "PT1M"
+    },
+    {
+      "name": "async.framework.processing.allow-core-thread-time-out",
       "type": "java.lang.Boolean",
-      "description": "Whether the SQS listener is enabled.",
-      "defaultValue": true
+      "description": "Whether to allow core threads to timeout and be removed from the pool.",
+      "defaultValue": false
     },
     {
-      "name": "async.framework.listener.max-concurrent-consumers",
-      "type": "java.lang.Integer",
-      "description": "Maximum number of concurrent consumers per queue.",
-      "defaultValue": 10
-    },
-    {
-      "name": "async.framework.listener.max-messages-per-poll",
-      "type": "java.lang.Integer",
-      "description": "Maximum number of messages to receive in a single poll.",
-      "defaultValue": 10
+      "name": "async.framework.processing.thread-name-prefix",
+      "type": "java.lang.String",
+      "description": "Prefix for async processing thread names, used for debugging and monitoring.",
+      "defaultValue": "async-processing-"
     }
   ],
   "hints": [
@@ -244,7 +610,15 @@
       "values": [
         {
           "value": "us-east-1",
-          "description": "US East (N. Virginia)"
+          "description": "US East (N. Virginia) - Default region for many AWS services"
+        },
+        {
+          "value": "us-east-2",
+          "description": "US East (Ohio)"
+        },
+        {
+          "value": "us-west-1",
+          "description": "US West (N. California)"
         },
         {
           "value": "us-west-2",
@@ -255,12 +629,28 @@
           "description": "Europe (Ireland)"
         },
         {
+          "value": "eu-west-2",
+          "description": "Europe (London)"
+        },
+        {
+          "value": "eu-central-1",
+          "description": "Europe (Frankfurt)"
+        },
+        {
           "value": "ap-south-1",
           "description": "Asia Pacific (Mumbai)"
         },
         {
           "value": "ap-southeast-1",
           "description": "Asia Pacific (Singapore)"
+        },
+        {
+          "value": "ap-southeast-2",
+          "description": "Asia Pacific (Sydney)"
+        },
+        {
+          "value": "ap-northeast-1",
+          "description": "Asia Pacific (Tokyo)"
         }
       ]
     },
@@ -269,11 +659,11 @@
       "values": [
         {
           "value": "PROVISIONED",
-          "description": "Provisioned capacity mode with specified read/write capacity units"
+          "description": "Provisioned capacity mode with specified read/write capacity units. Predictable costs but requires capacity planning."
         },
         {
           "value": "PAY_PER_REQUEST",
-          "description": "On-demand billing mode that scales automatically"
+          "description": "On-demand billing mode that scales automatically. Pay only for what you use, ideal for unpredictable workloads."
         }
       ]
     },
@@ -282,19 +672,31 @@
       "values": [
         {
           "value": "STANDARD",
-          "description": "Standard storage class for frequently accessed data"
+          "description": "Standard storage class for frequently accessed data. Highest availability and performance."
+        },
+        {
+          "value": "REDUCED_REDUNDANCY",
+          "description": "Reduced redundancy storage (deprecated). Use STANDARD_IA instead."
         },
         {
           "value": "STANDARD_IA",
-          "description": "Standard-Infrequent Access for less frequently accessed data"
+          "description": "Standard-Infrequent Access for less frequently accessed data. Lower cost than STANDARD."
+        },
+        {
+          "value": "ONEZONE_IA",
+          "description": "One Zone-Infrequent Access. Lower cost but stored in single AZ."
         },
         {
           "value": "INTELLIGENT_TIERING",
-          "description": "Automatically moves data between access tiers"
+          "description": "Automatically moves data between access tiers based on usage patterns. Optimizes costs automatically."
         },
         {
           "value": "GLACIER",
-          "description": "Archive storage for long-term backup"
+          "description": "Archive storage for long-term backup. Retrieval time: minutes to hours."
+        },
+        {
+          "value": "DEEP_ARCHIVE",
+          "description": "Lowest cost archive storage. Retrieval time: 12+ hours."
         }
       ]
     },
@@ -303,15 +705,235 @@
       "values": [
         {
           "value": "SSE_S3",
-          "description": "Server-side encryption with Amazon S3-managed keys"
+          "description": "Server-side encryption with Amazon S3-managed keys (AES-256). No additional configuration required."
         },
         {
           "value": "SSE_KMS",
-          "description": "Server-side encryption with AWS KMS-managed keys"
+          "description": "Server-side encryption with AWS KMS-managed keys. Provides audit trail and key rotation."
         },
         {
           "value": "SSE_C",
-          "description": "Server-side encryption with customer-provided keys"
+          "description": "Server-side encryption with customer-provided keys. Customer manages encryption keys."
+        }
+      ]
+    },
+    {
+      "name": "async.framework.retry.max-attempts",
+      "providers": [
+        {
+          "name": "any",
+          "parameters": {
+            "target": "java.lang.Integer"
+          }
+        }
+      ],
+      "values": [
+        {
+          "value": 0,
+          "description": "No retries - fail immediately on first error"
+        },
+        {
+          "value": 1,
+          "description": "Single retry attempt"
+        },
+        {
+          "value": 3,
+          "description": "Default - three retry attempts (recommended for most use cases)"
+        },
+        {
+          "value": 5,
+          "description": "High reliability - five retry attempts"
+        }
+      ]
+    },
+    {
+      "name": "async.framework.retry.backoff-multiplier",
+      "providers": [
+        {
+          "name": "any",
+          "parameters": {
+            "target": "java.lang.Double"
+          }
+        }
+      ],
+      "values": [
+        {
+          "value": 1.5,
+          "description": "Conservative exponential backoff"
+        },
+        {
+          "value": 2.0,
+          "description": "Standard exponential backoff (recommended)"
+        },
+        {
+          "value": 3.0,
+          "description": "Aggressive exponential backoff"
+        }
+      ]
+    },
+    {
+      "name": "async.framework.aws.sqs.max-messages",
+      "providers": [
+        {
+          "name": "any",
+          "parameters": {
+            "target": "java.lang.Integer"
+          }
+        }
+      ],
+      "values": [
+        {
+          "value": 1,
+          "description": "Process one message at a time (lowest latency)"
+        },
+        {
+          "value": 5,
+          "description": "Balanced throughput and latency"
+        },
+        {
+          "value": 10,
+          "description": "Maximum batch size (highest throughput)"
+        }
+      ]
+    },
+    {
+      "name": "async.framework.aws.sqs.wait-time-seconds",
+      "providers": [
+        {
+          "name": "any",
+          "parameters": {
+            "target": "java.lang.Integer"
+          }
+        }
+      ],
+      "values": [
+        {
+          "value": 0,
+          "description": "No long polling - immediate return"
+        },
+        {
+          "value": 5,
+          "description": "Short long polling"
+        },
+        {
+          "value": 20,
+          "description": "Maximum long polling (recommended for cost optimization)"
+        }
+      ]
+    },
+    {
+      "name": "async.framework.aws.dynamodb.read-capacity",
+      "providers": [
+        {
+          "name": "any",
+          "parameters": {
+            "target": "java.lang.Integer"
+          }
+        }
+      ],
+      "values": [
+        {
+          "value": 1,
+          "description": "Minimum capacity (1 RCU)"
+        },
+        {
+          "value": 5,
+          "description": "Low traffic (5 RCU)"
+        },
+        {
+          "value": 25,
+          "description": "Medium traffic (25 RCU)"
+        },
+        {
+          "value": 100,
+          "description": "High traffic (100 RCU)"
+        }
+      ]
+    },
+    {
+      "name": "async.framework.aws.dynamodb.write-capacity",
+      "providers": [
+        {
+          "name": "any",
+          "parameters": {
+            "target": "java.lang.Integer"
+          }
+        }
+      ],
+      "values": [
+        {
+          "value": 1,
+          "description": "Minimum capacity (1 WCU)"
+        },
+        {
+          "value": 5,
+          "description": "Low traffic (5 WCU)"
+        },
+        {
+          "value": 25,
+          "description": "Medium traffic (25 WCU)"
+        },
+        {
+          "value": 100,
+          "description": "High traffic (100 WCU)"
+        }
+      ]
+    },
+    {
+      "name": "async.framework.processing.core-pool-size",
+      "providers": [
+        {
+          "name": "any",
+          "parameters": {
+            "target": "java.lang.Integer"
+          }
+        }
+      ],
+      "values": [
+        {
+          "value": 2,
+          "description": "Minimal processing (2 threads)"
+        },
+        {
+          "value": 4,
+          "description": "Default processing (4 threads)"
+        },
+        {
+          "value": 8,
+          "description": "High throughput (8 threads)"
+        },
+        {
+          "value": 16,
+          "description": "Maximum throughput (16 threads)"
+        }
+      ]
+    },
+    {
+      "name": "async.framework.processing.max-pool-size",
+      "providers": [
+        {
+          "name": "any",
+          "parameters": {
+            "target": "java.lang.Integer"
+          }
+        }
+      ],
+      "values": [
+        {
+          "value": 10,
+          "description": "Conservative maximum (10 threads)"
+        },
+        {
+          "value": 20,
+          "description": "Default maximum (20 threads)"
+        },
+        {
+          "value": 50,
+          "description": "High concurrency (50 threads)"
+        },
+        {
+          "value": 100,
+          "description": "Maximum concurrency (100 threads)"
         }
       ]
     }
